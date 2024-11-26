@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Switch",
+  "version": "1.0.0",
+  "description": "Switch between tabs with ease using this extension",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "permissions": []
+}
