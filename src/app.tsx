@@ -1,13 +1,9 @@
 import './styles/globals.css'
 
-import { Button } from '@/components/ui/button'
+import { Home } from '@/containers/home'
 
 function App() {
-  return (
-    <div>
-      <Button>Click me</Button>
-    </div>
-  )
+  return <Home />
 }
 
 export default App
