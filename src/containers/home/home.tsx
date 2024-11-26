@@ -15,55 +15,108 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { SortableContext, useSortable } from '@dnd-kit/sortable'
+import { closestCenter, DndContext } from '@dnd-kit/core'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 
-export function Home() {
-  const { methods, tabs, handleSubmit, handleRemoveTab } = useHome()
+function SortableItem(props: { id: string; children: React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    overflow: 'hidden',
+  }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center">
-      <header className="flex items-center space-x-2">
-        <img src={Logo} alt="logo" width="60" height="60" />
-        <div className="flex flex-col">
-          <h1 className="text-2xl font-bold">Tab Switch</h1>
-          <p>Switch between tabs automatically</p>
-        </div>
-      </header>
-      <section>
-        <Form {...methods}>
-          <form onSubmit={methods.handleSubmit(handleSubmit)} className="flex space-x-2 mt-8">
-            <Table>
+    <TableRow ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {props.children}
+    </TableRow>
+  )
+}
+
+export function Home() {
+  const {
+    tabs,
+    methods,
+    activeSwitch,
+    handleSubmit,
+    handleDragEnd,
+    handleRemoveTab,
+    handleSwitchChange,
+  } = useHome()
+
+  return (
+    <Form {...methods}>
+      <form onSubmit={methods.handleSubmit(handleSubmit)} className="p-4">
+        <main>
+          <header className="flex justify-between w-full px-4 py-2">
+            <div className="flex items-center space-x-2">
+              <img src={Logo} alt="logo" width="60" height="60" />
+              <div className="flex flex-col">
+                <h1 className="text-2xl font-bold">Tab Switch</h1>
+                <p>Switch between tabs automatically</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="switch-mode"
+                checked={activeSwitch}
+                onCheckedChange={handleSwitchChange}
+              />
+              <Label htmlFor="airplane-mode">{activeSwitch ? 'Active' : 'Inactive'}</Label>
+            </div>
+          </header>
+          <section className="mt-8">
+            <Table className="overflow-hidden">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10"></TableHead>
-                  <TableHead>Name</TableHead>
+                  <TableHead className="w-28">Name</TableHead>
                   <TableHead>URL</TableHead>
-                  <TableHead>Interval (ms)</TableHead>
-                  <TableHead>Action</TableHead>
+                  <TableHead className="w-28">Interval (ms)</TableHead>
+                  <TableHead className="w-28">Action</TableHead>
                 </TableRow>
               </TableHeader>
+              <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={tabs.map((tab) => tab.name)}>
+                  <TableBody className="overflow-hidden">
+                    {tabs.map((tab, index) => (
+                      <SortableItem key={tab.name} id={tab.name}>
+                        <TableCell className="cursor-move">
+                          <GripVertical size={16} className="ml-1" />
+                        </TableCell>
+                        <TableCell>{tab.name}</TableCell>
+                        <TableCell>
+                          <a
+                            href={tab.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-blue-500 underline hover:font-bold transition-all"
+                          >
+                            {tab.url}
+                          </a>
+                        </TableCell>
+                        <TableCell>{tab.interval} ms</TableCell>
+                        <TableCell>
+                          <Button
+                            type="button"
+                            className="w-24"
+                            variant="outline"
+                            onClick={() => handleRemoveTab(index)}
+                          >
+                            <Trash2 size={16} className="mr-1" />
+                            Delete
+                          </Button>
+                        </TableCell>
+                      </SortableItem>
+                    ))}
+                  </TableBody>
+                </SortableContext>
+              </DndContext>
               <TableBody>
-                {tabs.map((tab, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="cursor-move">
-                      <GripVertical size={16} className="ml-1" />
-                    </TableCell>
-                    <TableCell>{tab.name}</TableCell>
-                    <TableCell>{tab.url}</TableCell>
-                    <TableCell>{tab.interval}</TableCell>
-                    <TableCell>
-                      <Button
-                        type="button"
-                        className="w-24"
-                        variant="outline"
-                        onClick={() => handleRemoveTab(index)}
-                      >
-                        <Trash2 size={16} className="mr-1" />
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
                 <TableRow>
                   <TableCell>
                     <RotateCwSquare size={16} className="ml-1" />
@@ -114,9 +167,9 @@ export function Home() {
                 </TableRow>
               </TableBody>
             </Table>
-          </form>
-        </Form>
-      </section>
-    </main>
+          </section>
+        </main>
+      </form>
+    </Form>
   )
 }
