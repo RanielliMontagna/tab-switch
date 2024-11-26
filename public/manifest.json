@@ -3,7 +3,7 @@
   "name": "Tab Switch",
   "version": "1.0.0",
   "description": "Switch between tabs automatically",
-  "permissions": ["tabs"],
+  "permissions": ["storage", "tabs"],
   "action": {
     "default_popup": "index.html"
   },

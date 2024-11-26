@@ -7,7 +7,7 @@ import { DragEndEvent } from '@dnd-kit/core'
 
 export function useHome() {
   const [tabs, setTabs] = useState<TabSchema[]>([])
-  const [activeSwitch, setActiveSwitch] = useState(false)
+  const [activeSwitch, setActiveSwitch] = useState(localStorage.getItem('switch') === 'true')
 
   const methods = useForm<TabSchema>({
     resolver: zodResolver(newTabSchema),
@@ -15,7 +15,6 @@ export function useHome() {
 
   function handleSubmit(data: TabSchema) {
     const newTabs = [...tabs, data]
-
     setTabs(newTabs)
 
     // Save the form data to local storage
@@ -27,8 +26,6 @@ export function useHome() {
 
   function loadTabs() {
     const tabs = localStorage.getItem('tabs')
-
-    console.log('Load tabs:', JSON.parse(tabs!))
 
     if (tabs) {
       setTabs(JSON.parse(tabs))
@@ -47,6 +44,18 @@ export function useHome() {
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
 
+    const idDelete = (event.activatorEvent.target as HTMLElement).id
+
+    if (idDelete === 'delete') {
+      handleRemoveTab(tabs.findIndex((tab) => tab.name === active.id))
+      return
+    }
+
+    if (event.over?.id === 'delete') {
+      handleRemoveTab(tabs.findIndex((tab) => tab.name === active.id))
+      return
+    }
+
     if (active.id !== over?.id) {
       const oldIndex = tabs.findIndex((tab) => tab.name === active.id)
       const newIndex = tabs.findIndex((tab) => tab.name === over?.id)
@@ -62,9 +71,24 @@ export function useHome() {
     }
   }
 
-  function handleSwitchChange() {
-    console.log('entrou')
-    setActiveSwitch((prev) => !prev)
+  function handleOpenTabsOnStartup() {
+    const openedTabs: number[] = []
+    tabs.forEach((tab) => {
+      chrome.tabs.create({ url: tab.url }, (newTab) => {
+        if (newTab.id) {
+          openedTabs.push(newTab.id)
+        }
+      })
+    })
+  }
+
+  function handleCheckedChange(checked: boolean) {
+    setActiveSwitch(checked)
+
+    // Save the switch state to local storage
+    localStorage.setItem('switch', JSON.stringify(checked))
+
+    if (checked) handleOpenTabsOnStartup()
   }
 
   useEffect(() => {
@@ -78,6 +102,6 @@ export function useHome() {
     handleSubmit,
     handleDragEnd,
     handleRemoveTab,
-    handleSwitchChange,
+    handleCheckedChange,
   }
 }

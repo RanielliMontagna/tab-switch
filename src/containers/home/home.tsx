@@ -38,15 +38,8 @@ function SortableItem(props: { id: string; children: React.ReactNode }) {
 }
 
 export function Home() {
-  const {
-    tabs,
-    methods,
-    activeSwitch,
-    handleSubmit,
-    handleDragEnd,
-    handleRemoveTab,
-    handleSwitchChange,
-  } = useHome()
+  const { tabs, methods, activeSwitch, handleSubmit, handleDragEnd, handleCheckedChange } =
+    useHome()
 
   return (
     <Form {...methods}>
@@ -64,7 +57,7 @@ export function Home() {
               <Switch
                 id="switch-mode"
                 checked={activeSwitch}
-                onCheckedChange={handleSwitchChange}
+                onCheckedChange={handleCheckedChange}
               />
               <Label htmlFor="airplane-mode">{activeSwitch ? 'Active' : 'Inactive'}</Label>
             </div>
@@ -83,7 +76,7 @@ export function Home() {
               <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={tabs.map((tab) => tab.name)}>
                   <TableBody className="overflow-hidden">
-                    {tabs.map((tab, index) => (
+                    {tabs.map((tab) => (
                       <SortableItem key={tab.name} id={tab.name}>
                         <TableCell className="cursor-move">
                           <GripVertical size={16} className="ml-1" />
@@ -100,13 +93,8 @@ export function Home() {
                           </a>
                         </TableCell>
                         <TableCell>{tab.interval} ms</TableCell>
-                        <TableCell>
-                          <Button
-                            type="button"
-                            className="w-24"
-                            variant="outline"
-                            onClick={() => handleRemoveTab(index)}
-                          >
+                        <TableCell className="position-relative">
+                          <Button id="delete" type="button" className="w-24" variant="outline">
                             <Trash2 size={16} className="mr-1" />
                             Delete
                           </Button>
@@ -123,26 +111,23 @@ export function Home() {
                   </TableCell>
                   <TableCell>
                     <Input
-                      {...methods.register('name', {
-                        required: 'Name is required',
-                      })}
+                      {...methods.register('name', { required: 'Name is required' })}
                       name="name"
                       placeholder="Example"
-                      required
                       autoFocus
                     />
                   </TableCell>
                   <TableCell>
                     <Input
                       {...methods.register('url', {
+                        required: 'URL is required',
                         pattern: {
                           value: /^https?:\/\/.+/,
-                          message: 'URL must start with http:// or https://',
+                          message: 'Enter a valid URL',
                         },
                       })}
                       name="url"
                       placeholder="https://example.com"
-                      required
                     />
                   </TableCell>
                   <TableCell>
@@ -155,7 +140,6 @@ export function Home() {
                       type="number"
                       step="1000"
                       placeholder="1000"
-                      required
                     />
                   </TableCell>
                   <TableCell>
