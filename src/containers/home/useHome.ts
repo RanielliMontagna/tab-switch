@@ -11,6 +11,7 @@ export function useHome() {
 
   const methods = useForm<TabSchema>({
     resolver: zodResolver(newTabSchema),
+    defaultValues: { name: '', url: '', interval: 1000, saved: false },
   })
 
   function handleSubmit(data: TabSchema) {

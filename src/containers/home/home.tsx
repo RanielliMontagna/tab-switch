@@ -3,9 +3,6 @@ import { GripVertical, RotateCwSquare, Trash2, Save } from 'lucide-react'
 import Logo from '@/assets/logo.svg'
 import { useHome } from './useHome'
 
-import { Form } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -18,8 +15,8 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { SortableContext, useSortable } from '@dnd-kit/sortable'
 import { closestCenter, DndContext } from '@dnd-kit/core'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
+
+import { Button, CustomInput, Form, Label, Switch } from '@/components'
 
 function SortableItem(props: { id: string; children: React.ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.id })
@@ -106,43 +103,47 @@ export function Home() {
               </DndContext>
               <TableBody>
                 <TableRow>
-                  <TableCell>
-                    <RotateCwSquare size={16} className="ml-1" />
+                  <TableCell className="align-top">
+                    <RotateCwSquare size={16} className="ml-1 mt-2.5" />
                   </TableCell>
-                  <TableCell>
-                    <Input
-                      {...methods.register('name', { required: 'Name is required' })}
+                  <TableCell className="align-top">
+                    <CustomInput
+                      control={methods.control}
                       name="name"
                       placeholder="Example"
-                      autoFocus
+                      required
                     />
                   </TableCell>
-                  <TableCell>
-                    <Input
-                      {...methods.register('url', {
-                        required: 'URL is required',
-                        pattern: {
-                          value: /^https?:\/\/.+/,
-                          message: 'Enter a valid URL',
-                        },
-                      })}
+                  <TableCell className="align-top">
+                    <CustomInput
+                      control={methods.control}
                       name="url"
                       placeholder="https://example.com"
+                      required
                     />
                   </TableCell>
-                  <TableCell>
-                    <Input
-                      {...methods.register('interval', {
-                        valueAsNumber: true,
-                        min: 1000,
-                      })}
+                  <TableCell className="align-top">
+                    <CustomInput
+                      control={methods.control}
                       name="interval"
                       type="number"
-                      step="1000"
                       placeholder="1000"
+                      step="1000"
+                      onChange={(e) => {
+                        if (parseInt(e.target.value) < 1000) {
+                          e.target.value = Math.max(1000, parseInt(e.target.value)).toString()
+                        }
+
+                        if (e.target.value === '') {
+                          e.target.value = '1000'
+                        }
+
+                        methods.setValue('interval', Number(e.target.value))
+                      }}
+                      required
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="align-top">
                     <Button type="submit" className="w-24">
                       <Save size={16} className="mr-1" />
                       Save
