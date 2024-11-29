@@ -1,9 +1,9 @@
 import { z } from 'zod'
 
 export const newTabSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, 'Required'),
   url: z.string().url(),
-  interval: z.number().int().positive(),
+  interval: z.coerce.number().int().positive().min(1000, 'Interval must be at least 1000 ms'),
   saved: z.boolean().optional(),
 })
 
