@@ -4,12 +4,15 @@
   "version": "1.0.0",
   "description": "Switch between tabs automatically",
   "permissions": ["storage", "tabs"],
+  "icons": {
+    "16": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  },
   "action": {
     "default_popup": "index.html"
   },
-  "icons": {
-    "16": "favicon.ico",
-    "48": "favicon.ico",
-    "128": "favicon.ico"
+  "background": {
+    "service_worker": "background.js"
   }
 }
