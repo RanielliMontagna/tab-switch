@@ -1,17 +1,20 @@
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { newTabSchema, TabSchema } from './home.schema'
-import { useEffect, useState } from 'react'
 import { DragEndEvent } from '@dnd-kit/core'
+import { useToast } from '@/hooks/use-toast'
+
+import { newTabSchema, TabSchema } from './home.schema'
 
 export function useHome() {
+  const { toast } = useToast()
   const [tabs, setTabs] = useState<TabSchema[]>([])
   const [activeSwitch, setActiveSwitch] = useState(localStorage.getItem('switch') === 'true')
 
   const methods = useForm<TabSchema>({
     resolver: zodResolver(newTabSchema),
-    defaultValues: { name: '', url: '', interval: 1000, saved: false },
+    defaultValues: { name: '', url: '', interval: 5000, saved: false },
   })
 
   function handleSubmit(data: TabSchema) {
@@ -72,24 +75,44 @@ export function useHome() {
     }
   }
 
-  function handleOpenTabsOnStartup() {
-    const openedTabs: number[] = []
-    tabs.forEach((tab) => {
-      chrome.tabs.create({ url: tab.url }, (newTab) => {
-        if (newTab.id) {
-          openedTabs.push(newTab.id)
-        }
-      })
-    })
-  }
-
   function handleCheckedChange(checked: boolean) {
-    setActiveSwitch(checked)
+    try {
+      console.log('checked', checked)
 
-    // Save the switch state to local storage
-    localStorage.setItem('switch', JSON.stringify(checked))
+      if (checked) {
+        //Verify if exist +1 tab configured
+        if (tabs.length === 0) {
+          toast({
+            title: 'Please add at least one tab!',
+            description: 'You need to add at least one tab to start the auto refresh.',
+            variant: 'destructive',
+          })
 
-    if (checked) handleOpenTabsOnStartup()
+          return
+        }
+
+        // Send message to background script
+        chrome.runtime.sendMessage({ status: checked, tabs }, (response) => {
+          if (response?.status === 'success') {
+            console.log('Message sent successfully!')
+          } else {
+            console.error('Failed to send message!')
+          }
+        })
+      }
+
+      // Save the switch state to local storage
+      localStorage.setItem('switch', JSON.stringify(checked))
+
+      // Update the switch state
+      setActiveSwitch(checked)
+    } catch {
+      toast({
+        title: 'Install the extension!',
+        description: 'You need to install the extension to use this feature.',
+        variant: 'destructive',
+      })
+    }
   }
 
   useEffect(() => {

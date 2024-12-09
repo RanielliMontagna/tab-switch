@@ -17,6 +17,7 @@ import { SortableContext, useSortable } from '@dnd-kit/sortable'
 import { closestCenter, DndContext } from '@dnd-kit/core'
 
 import { Button, CustomInput, Form, Label, Switch } from '@/components'
+import { minInterval } from './home.schema'
 
 function SortableItem(props: { id: string; children: React.ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.id })
@@ -130,12 +131,15 @@ export function Home() {
                       placeholder="1000"
                       step="1000"
                       onChange={(e) => {
-                        if (parseInt(e.target.value) < 1000) {
-                          e.target.value = Math.max(1000, parseInt(e.target.value)).toString()
+                        if (parseInt(e.target.value) < minInterval) {
+                          e.target.value = Math.max(
+                            minInterval,
+                            parseInt(e.target.value)
+                          ).toString()
                         }
 
                         if (e.target.value === '') {
-                          e.target.value = '1000'
+                          e.target.value = minInterval.toString()
                         }
 
                         methods.setValue('interval', Number(e.target.value))
@@ -155,6 +159,11 @@ export function Home() {
           </section>
         </main>
       </form>
+      <div className="fixed bottom-4 right-4">
+        <div className="bg-white shadow-md rounded-md p-4">
+          <p className="text-sm">When activated, other open tabs will be closed automatically.</p>
+        </div>
+      </div>
     </Form>
   )
 }
