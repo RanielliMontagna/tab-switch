@@ -1,50 +1,59 @@
-# React + TypeScript + Vite
+<div align='center'>
+    <img src='public/logo.png' alt='Tab Switch Logo' width='80'  />
+    <h2 align='center' style={{margin: 0}}>Tab Switch</h2>
+</div>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 📖 Sobre o projeto
 
-Currently, two official plugins are available:
+Tab Switch é uma extensão de navegador que permite a rotação automática entre abas abertas, fechando outras abas não configuradas. Ideal para apresentações, monitoramento de dashboards e outras situações onde a rotação de abas é necessária.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🛠️ Funcionalidades
 
-## Expanding the ESLint configuration
+- [x] Configuração de tempo de rotação entre abas
+- [x] Configuração de abas a serem exibidas
+- [x] Importação e exportação de configurações de abas
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## 📸 Screenshot
 
-- Configure the top-level `parserOptions` property like this:
+![Screenshot 1](./public/screenshot.png) 
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## 🚀 Tecnologias Utilizadas
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+- [React](https://reactjs.org/) - Biblioteca JavaScript para criar interfaces de usuário
+- [TypeScript](https://www.typescriptlang.org/) - Superset JavaScript
+- [Vite](https://vitejs.dev/) - Build tool para aplicações web modernas
+- [Tailwind CSS](https://tailwindcss.com/) - Framework CSS utilitário de baixo nível para construir designs personalizados
+- [Lucide Icons](https://lucide.dev/) - Conjunto de ícones para projetos web
+- [ESLint](https://eslint.org/) - Linter para JavaScript
+- [Prettier](https://prettier.io/) - Formatador de código
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## 📦 Instalação 
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+1. Clone o repositório:
+    ```sh
+    git clone git@github.com:RanielliMontagna/tab-switch.git
+    cd tab-switch
+    ```
+2. Instale as dependências:
+    ```sh
+    pnpm install
+    ```
+3. Compile o projeto:
+    ```sh
+    yarn build
+    ```
+4. Adicione a extensão no Chrome:
+    1. Abra o Chrome e vá para `chrome://extensions/`.
+    2. Ative o "Modo do desenvolvedor" no canto superior direito.
+    3. Clique em "Carregar sem compactação" e selecione a pasta `build` gerada pelo comando de build.
+
+Agora a extensão está instalada e pronta para uso no Chrome.
+
+
+## 📝 Licença
+
+Este projeto está licenciado sob a Licença MIT - consulte o arquivo [LICENSE](LICENSE) para obter detalhes.
+
+---
+
+#### 🖊️ Autor - [@raniellimontagna](https://www.github.com/raniellimontagna)
