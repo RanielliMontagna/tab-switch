@@ -26,6 +26,7 @@ import { closestCenter, DndContext } from '@dnd-kit/core'
 
 import { Button, CustomInput, Form, Label, Switch } from '@/components'
 import { minInterval } from './home.schema'
+import { useTranslation } from 'react-i18next'
 
 function SortableItem(props: { id: string; children: React.ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.id })
@@ -55,6 +56,8 @@ export function Home() {
     handleCheckedChange,
   } = useHome()
 
+  const { t } = useTranslation()
+
   return (
     <Form {...methods}>
       <form onSubmit={methods.handleSubmit(handleSubmit)} className="p-4">
@@ -63,8 +66,8 @@ export function Home() {
             <div className="flex items-center space-x-2">
               <img src={Logo} alt="logo" width="60" height="60" />
               <div className="flex flex-col">
-                <h1 className="text-2xl font-bold">Tab Switch</h1>
-                <p>Switch between tabs automatically</p>
+                <h1 className="text-2xl font-bold">{t('title')}</h1>
+                <p>{t('description')}</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -73,7 +76,9 @@ export function Home() {
                 checked={activeSwitch}
                 onCheckedChange={handleCheckedChange}
               />
-              <Label htmlFor="airplane-mode">{activeSwitch ? 'Active' : 'Inactive'}</Label>
+              <Label htmlFor="airplane-mode">
+                {activeSwitch ? t('switchActive') : t('switchInactive')}
+              </Label>
             </div>
           </header>
           <section className="mt-8">
@@ -81,10 +86,10 @@ export function Home() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10"></TableHead>
-                  <TableHead className="w-28">Name</TableHead>
-                  <TableHead>URL</TableHead>
-                  <TableHead className="w-28">Interval (ms)</TableHead>
-                  <TableHead className="w-28">Action</TableHead>
+                  <TableHead className="w-28">{t('table.name')}</TableHead>
+                  <TableHead>{t('table.url')}</TableHead>
+                  <TableHead className="w-28">{t('table.interval')}</TableHead>
+                  <TableHead className="w-28">{t('table.action')}</TableHead>
                 </TableRow>
               </TableHeader>
               <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -110,7 +115,7 @@ export function Home() {
                         <TableCell className="position-relative">
                           <Button id="delete" type="button" className="w-24" variant="outline">
                             <Trash2 size={16} className="mr-1" />
-                            Delete
+                            {t('table.delete')}
                           </Button>
                         </TableCell>
                       </SortableItem>
@@ -127,7 +132,7 @@ export function Home() {
                     <CustomInput
                       control={methods.control}
                       name="name"
-                      placeholder="Example"
+                      placeholder={t('table.namePlaceholder')}
                       required
                     />
                   </TableCell>
@@ -135,7 +140,7 @@ export function Home() {
                     <CustomInput
                       control={methods.control}
                       name="url"
-                      placeholder="https://example.com"
+                      placeholder={t('table.urlPlaceholder')}
                       required
                     />
                   </TableCell>
@@ -166,7 +171,7 @@ export function Home() {
                   <TableCell className="align-top">
                     <Button type="submit" className="w-24">
                       <Save size={16} className="mr-1" />
-                      Save
+                      {t('table.save')}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -177,18 +182,18 @@ export function Home() {
       </form>
       <div className="fixed bottom-4 right-4 left-4 flex justify-between items-center">
         <div className="flex space-x-2">
-          <Button variant="default" type="button" className="w-24" onClick={importTabs}>
+          <Button variant="default" type="button" onClick={importTabs}>
             <FolderUp size={16} className="mr-1" />
-            Import
+            <p>{t('import')}</p>
           </Button>
-          <Button variant="secondary" type="button" className="w-24" onClick={exportTabs}>
+          <Button variant="secondary" type="button" onClick={exportTabs}>
             <FolderDown size={16} className="mr-1" />
-            Export
+            <p>{t('export')}</p>
           </Button>
         </div>
         <div className="flex items-center space-x-2 text-gray-500">
           <Info size={16} />
-          <p className="text-sm">When activated, other open tabs will be closed automatically.</p>
+          <p className="text-sm">{t('infoOpen')}</p>
         </div>
       </div>
     </Form>

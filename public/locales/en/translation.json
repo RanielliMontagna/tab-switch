@@ -1,0 +1,36 @@
+{
+  "title": "Tab Switch",
+  "description": "Automatically switch between tabs",
+  "switchActive": "Active",
+  "switchInactive": "Inactive",
+  "table": {
+    "name": "Name",
+    "namePlaceholder": "Example",
+    "url": "URL",
+    "urlPlaceholder": "https://example.com",
+    "interval": "Interval (ms)",
+    "action": "Action",
+    "delete": "Delete",
+    "save": "Save"
+  },
+  "infoOpen": "When activated, other open tabs will be closed automatically.",
+  "import": "Import",
+  "export": "Export",
+
+  "toastNotInstalled": {
+    "title": "Install the extension!",
+    "description": "You need to install the extension to use this feature."
+  },
+  "toastExportSuccess": {
+    "title": "Export successful!",
+    "description": "tabs have been exported successfully."
+  },
+  "toastImportSuccess": {
+    "title": "Import successful!",
+    "description": "tabs have been imported successfully."
+  },
+  "toastLeastOneTab": {
+    "title": "Please add at least two tabs!",
+    "description": "You need to add at least two tabs to start automatic rotation."
+  }
+}

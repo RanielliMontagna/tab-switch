@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { DragEndEvent } from '@dnd-kit/core'
@@ -8,6 +9,8 @@ import { useToast } from '@/hooks/use-toast'
 import { newTabSchema, TabSchema } from './home.schema'
 
 export function useHome() {
+  const { t } = useTranslation()
+
   const { toast } = useToast()
   const [tabs, setTabs] = useState<TabSchema[]>([])
   const [activeSwitch, setActiveSwitch] = useState(localStorage.getItem('switch') === 'true')
@@ -77,8 +80,8 @@ export function useHome() {
 
   function handleCheckedChange(checked: boolean) {
     try {
-      //Verify if exist +1 tab configured
-      if (tabs.length === 0) {
+      //Verify if exist at least two tabs to start the auto refresh
+      if (tabs.length <= 1) {
         toast({
           title: 'Please add at least one tab!',
           description: 'You need to add at least one tab to start the auto refresh.',
@@ -98,8 +101,8 @@ export function useHome() {
       setActiveSwitch(checked)
     } catch {
       toast({
-        title: 'Install the extension!',
-        description: 'You need to install the extension to use this feature.',
+        title: t('toastNotInstalled.title'),
+        description: t('toastNotInstalled.description'),
         variant: 'destructive',
       })
     }
@@ -117,8 +120,8 @@ export function useHome() {
     URL.revokeObjectURL(url)
 
     toast({
-      title: 'Tabs exported!',
-      description: `${tabs.length} tabs have been exported successfully.`,
+      title: t('toastExportSuccess.title'),
+      description: `${tabs.length} ${t('toastExportSuccess.description')}`,
       variant: 'success',
     })
   }
@@ -144,8 +147,8 @@ export function useHome() {
           localStorage.setItem('tabs', JSON.stringify(parsed))
 
           toast({
-            title: 'Tabs imported!',
-            description: `${parsed.length} tabs have been imported successfully.`,
+            title: t('toastImportSuccess.title'),
+            description: `${parsed.length} ${t('toastImportSuccess.description')}`,
             variant: 'success',
           })
         }
