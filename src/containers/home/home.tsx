@@ -1,4 +1,12 @@
-import { GripVertical, RotateCwSquare, Trash2, Save } from 'lucide-react'
+import {
+  GripVertical,
+  RotateCwSquare,
+  Trash2,
+  Save,
+  FolderDown,
+  FolderUp,
+  Info,
+} from 'lucide-react'
 
 import Logo from '@/assets/logo.svg'
 import { useHome } from './useHome'
@@ -36,8 +44,16 @@ function SortableItem(props: { id: string; children: React.ReactNode }) {
 }
 
 export function Home() {
-  const { tabs, methods, activeSwitch, handleSubmit, handleDragEnd, handleCheckedChange } =
-    useHome()
+  const {
+    tabs,
+    methods,
+    activeSwitch,
+    exportTabs,
+    importTabs,
+    handleSubmit,
+    handleDragEnd,
+    handleCheckedChange,
+  } = useHome()
 
   return (
     <Form {...methods}>
@@ -159,8 +175,19 @@ export function Home() {
           </section>
         </main>
       </form>
-      <div className="fixed bottom-4 right-4">
-        <div className="bg-white shadow-md rounded-md p-4">
+      <div className="fixed bottom-4 right-4 left-4 flex justify-between items-center">
+        <div className="flex space-x-2">
+          <Button variant="default" type="button" className="w-24" onClick={importTabs}>
+            <FolderDown size={16} className="mr-1" />
+            Import
+          </Button>
+          <Button variant="secondary" type="button" className="w-24" onClick={exportTabs}>
+            <FolderUp size={16} className="mr-1" />
+            Export
+          </Button>
+        </div>
+        <div className="flex items-center space-x-2 text-gray-500">
+          <Info size={16} />
           <p className="text-sm">When activated, other open tabs will be closed automatically.</p>
         </div>
       </div>

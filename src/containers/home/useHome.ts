@@ -115,6 +115,58 @@ export function useHome() {
     }
   }
 
+  function exportTabs() {
+    const data = new Blob([JSON.stringify(tabs)], { type: 'application/json' })
+    const url = URL.createObjectURL(data)
+    const a = document.createElement('a')
+
+    a.href = url
+    a.download = 'tabs.json'
+    a.click()
+
+    URL.revokeObjectURL(url)
+
+    toast({
+      title: 'Tabs exported!',
+      description: `${tabs.length} tabs have been exported successfully.`,
+      variant: 'success',
+    })
+  }
+
+  function importTabs() {
+    const input = document.createElement('input')
+
+    input.type = 'file'
+    input.accept = '.json'
+    input.onchange = async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0]
+
+      if (file) {
+        const reader = new FileReader()
+
+        reader.onload = async (e) => {
+          const content = e.target?.result as string
+          const parsed = JSON.parse(content)
+
+          setTabs(parsed)
+
+          // Save the form data to local storage
+          localStorage.setItem('tabs', JSON.stringify(parsed))
+
+          toast({
+            title: 'Tabs imported!',
+            description: `${parsed.length} tabs have been imported successfully.`,
+            variant: 'success',
+          })
+        }
+
+        reader.readAsText(file)
+      }
+    }
+
+    input.click()
+  }
+
   useEffect(() => {
     loadTabs()
   }, [])
@@ -123,9 +175,10 @@ export function useHome() {
     tabs,
     methods,
     activeSwitch,
+    importTabs,
+    exportTabs,
     handleSubmit,
     handleDragEnd,
-    handleRemoveTab,
     handleCheckedChange,
   }
 }
