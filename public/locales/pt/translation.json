@@ -1,0 +1,36 @@
+{
+  "title": "Tab Switch",
+  "description": "Alterne automaticamente entre as abas",
+  "switchActive": "Ativo",
+  "switchInactive": "Inativo",
+  "table": {
+    "name": "Nome",
+    "namePlaceholder": "Exemplo",
+    "url": "URL",
+    "urlPlaceholder": "https://exemplo.com",
+    "interval": "Intervalo (ms)",
+    "action": "Ação",
+    "delete": "Deletar",
+    "save": "Salvar"
+  },
+  "infoOpen": "Quando ativado, outras abas abertas serão fechadas automaticamente.",
+  "import": "Importar",
+  "export": "Exportar",
+
+  "toastNotInstalled": {
+    "title": "Instale a extensão!",
+    "description": "Você precisa instalar a extensão para usar este recurso."
+  },
+  "toastExportSuccess": {
+    "title": "Exportação bem-sucedida!",
+    "description": "abas foram exportadas com sucesso."
+  },
+  "toastImportSuccess": {
+    "title": "Importação bem-sucedida!",
+    "description": "abas foram importadas com sucesso."
+  },
+  "toastLeastOneTab": {
+    "title": "Por favor, adicione pelo menos duas aba!",
+    "description": "Você precisa adicionar pelo menos duas aba para iniciar a rotação automática."
+  }
+}
