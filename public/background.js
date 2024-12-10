@@ -1,6 +1,13 @@
+/**
+ *  @description This variable is used to stop the rotation of the tabs
+ *  @type {boolean}
+ */
+let stopRotation = false
+
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener(async (message, _, sendResponse) => {
-  if (!message.status && message.tabs) {
+  if (!message.status) {
+    stopRotation = true
     sendResponse({ status: 'Rotation stopped' })
     return
   }
@@ -61,8 +68,17 @@ async function createTabs(tabs) {
 function rotateTabs(tabs) {
   let currentTab = 0
 
-  setInterval(() => {
+  const rotate = () => {
+    if (stopRotation) {
+      stopRotation = false
+      return
+    }
+
     chrome.tabs.update(tabs[currentTab].id, { active: true })
     currentTab = currentTab === tabs.length - 1 ? 0 : currentTab + 1
-  }, tabs[currentTab].interval)
+
+    setTimeout(rotate, tabs[currentTab].interval)
+  }
+
+  rotate()
 }

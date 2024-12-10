@@ -178,11 +178,11 @@ export function Home() {
       <div className="fixed bottom-4 right-4 left-4 flex justify-between items-center">
         <div className="flex space-x-2">
           <Button variant="default" type="button" className="w-24" onClick={importTabs}>
-            <FolderDown size={16} className="mr-1" />
+            <FolderUp size={16} className="mr-1" />
             Import
           </Button>
           <Button variant="secondary" type="button" className="w-24" onClick={exportTabs}>
-            <FolderUp size={16} className="mr-1" />
+            <FolderDown size={16} className="mr-1" />
             Export
           </Button>
         </div>

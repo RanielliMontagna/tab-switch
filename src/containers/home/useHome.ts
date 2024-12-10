@@ -77,29 +77,19 @@ export function useHome() {
 
   function handleCheckedChange(checked: boolean) {
     try {
-      console.log('checked', checked)
-
-      if (checked) {
-        //Verify if exist +1 tab configured
-        if (tabs.length === 0) {
-          toast({
-            title: 'Please add at least one tab!',
-            description: 'You need to add at least one tab to start the auto refresh.',
-            variant: 'destructive',
-          })
-
-          return
-        }
-
-        // Send message to background script
-        chrome.runtime.sendMessage({ status: checked, tabs }, (response) => {
-          if (response?.status === 'success') {
-            console.log('Message sent successfully!')
-          } else {
-            console.error('Failed to send message!')
-          }
+      //Verify if exist +1 tab configured
+      if (tabs.length === 0) {
+        toast({
+          title: 'Please add at least one tab!',
+          description: 'You need to add at least one tab to start the auto refresh.',
+          variant: 'destructive',
         })
+
+        return
       }
+
+      // Send message to background script
+      chrome.runtime.sendMessage({ status: checked, tabs })
 
       // Save the switch state to local storage
       localStorage.setItem('switch', JSON.stringify(checked))
