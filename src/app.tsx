@@ -1,9 +1,15 @@
 import './styles/globals.css'
 
-import { Home } from '@/containers/home/home'
+import { Home } from '@/containers'
+import { Toaster } from '@/components'
 
 function App() {
-  return <Home />
+  return (
+    <>
+      <Home />
+      <Toaster />
+    </>
+  )
 }
 
 export default App

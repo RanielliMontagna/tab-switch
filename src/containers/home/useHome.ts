@@ -1,17 +1,20 @@
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-import { newTabSchema, TabSchema } from './home.schema'
-import { useEffect, useState } from 'react'
 import { DragEndEvent } from '@dnd-kit/core'
+import { useToast } from '@/hooks/use-toast'
+
+import { newTabSchema, TabSchema } from './home.schema'
 
 export function useHome() {
+  const { toast } = useToast()
   const [tabs, setTabs] = useState<TabSchema[]>([])
   const [activeSwitch, setActiveSwitch] = useState(localStorage.getItem('switch') === 'true')
 
   const methods = useForm<TabSchema>({
     resolver: zodResolver(newTabSchema),
-    defaultValues: { name: '', url: '', interval: 1000, saved: false },
+    defaultValues: { name: '', url: '', interval: 5000, saved: false },
   })
 
   function handleSubmit(data: TabSchema) {
@@ -72,24 +75,86 @@ export function useHome() {
     }
   }
 
-  function handleOpenTabsOnStartup() {
-    const openedTabs: number[] = []
-    tabs.forEach((tab) => {
-      chrome.tabs.create({ url: tab.url }, (newTab) => {
-        if (newTab.id) {
-          openedTabs.push(newTab.id)
-        }
+  function handleCheckedChange(checked: boolean) {
+    try {
+      //Verify if exist +1 tab configured
+      if (tabs.length === 0) {
+        toast({
+          title: 'Please add at least one tab!',
+          description: 'You need to add at least one tab to start the auto refresh.',
+          variant: 'destructive',
+        })
+
+        return
+      }
+
+      // Send message to background script
+      chrome.runtime.sendMessage({ status: checked, tabs })
+
+      // Save the switch state to local storage
+      localStorage.setItem('switch', JSON.stringify(checked))
+
+      // Update the switch state
+      setActiveSwitch(checked)
+    } catch {
+      toast({
+        title: 'Install the extension!',
+        description: 'You need to install the extension to use this feature.',
+        variant: 'destructive',
       })
+    }
+  }
+
+  function exportTabs() {
+    const data = new Blob([JSON.stringify(tabs)], { type: 'application/json' })
+    const url = URL.createObjectURL(data)
+    const a = document.createElement('a')
+
+    a.href = url
+    a.download = 'tabs.json'
+    a.click()
+
+    URL.revokeObjectURL(url)
+
+    toast({
+      title: 'Tabs exported!',
+      description: `${tabs.length} tabs have been exported successfully.`,
+      variant: 'success',
     })
   }
 
-  function handleCheckedChange(checked: boolean) {
-    setActiveSwitch(checked)
+  function importTabs() {
+    const input = document.createElement('input')
 
-    // Save the switch state to local storage
-    localStorage.setItem('switch', JSON.stringify(checked))
+    input.type = 'file'
+    input.accept = '.json'
+    input.onchange = async (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0]
 
-    if (checked) handleOpenTabsOnStartup()
+      if (file) {
+        const reader = new FileReader()
+
+        reader.onload = async (e) => {
+          const content = e.target?.result as string
+          const parsed = JSON.parse(content)
+
+          setTabs(parsed)
+
+          // Save the form data to local storage
+          localStorage.setItem('tabs', JSON.stringify(parsed))
+
+          toast({
+            title: 'Tabs imported!',
+            description: `${parsed.length} tabs have been imported successfully.`,
+            variant: 'success',
+          })
+        }
+
+        reader.readAsText(file)
+      }
+    }
+
+    input.click()
   }
 
   useEffect(() => {
@@ -100,9 +165,10 @@ export function useHome() {
     tabs,
     methods,
     activeSwitch,
+    importTabs,
+    exportTabs,
     handleSubmit,
     handleDragEnd,
-    handleRemoveTab,
     handleCheckedChange,
   }
 }
