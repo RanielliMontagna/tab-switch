@@ -106,18 +106,16 @@ export function setupZodI18n() {
             if (iss.type === 'number') {
               const numMinMsg = i18next.t(`validation.${String(fieldName)}.min`, {
                 defaultValue: i18next.t('validation.common.numberTooSmall', {
-                  defaultValue: `Number must be greater than or equal to ${iss.minimum}`,
+                  defaultValue: `Must be ≥ ${iss.minimum}`,
                   minimum: iss.minimum,
                 }) as string,
                 minimum: iss.minimum,
               })
-              return typeof numMinMsg === 'string'
-                ? numMinMsg
-                : `Number must be greater than or equal to ${iss.minimum}`
+              return typeof numMinMsg === 'string' ? numMinMsg : `Must be ≥ ${iss.minimum}`
             }
           }
           const tooSmallMsg = i18next.t('validation.common.tooSmall', {
-            defaultValue: `Value must be greater than or equal to ${'minimum' in iss ? iss.minimum : 0}`,
+            defaultValue: `Must be ≥ ${'minimum' in iss ? iss.minimum : 0}`,
             minimum: 'minimum' in iss ? iss.minimum : 0,
           })
           return typeof tooSmallMsg === 'string' ? tooSmallMsg : 'Value too small'
@@ -139,18 +137,16 @@ export function setupZodI18n() {
             if (iss.type === 'number') {
               const numMaxMsg = i18next.t(`validation.${String(fieldName)}.max`, {
                 defaultValue: i18next.t('validation.common.numberTooBig', {
-                  defaultValue: `Number must be less than or equal to ${iss.maximum}`,
+                  defaultValue: `Must be ≤ ${iss.maximum}`,
                   maximum: iss.maximum,
                 }) as string,
                 maximum: iss.maximum,
               })
-              return typeof numMaxMsg === 'string'
-                ? numMaxMsg
-                : `Number must be less than or equal to ${iss.maximum}`
+              return typeof numMaxMsg === 'string' ? numMaxMsg : `Must be ≤ ${iss.maximum}`
             }
           }
           const tooBigMsg = i18next.t('validation.common.tooBig', {
-            defaultValue: `Value must be less than or equal to ${'maximum' in iss ? iss.maximum : 0}`,
+            defaultValue: `Must be ≤ ${'maximum' in iss ? iss.maximum : 0}`,
             maximum: 'maximum' in iss ? iss.maximum : 0,
           })
           return typeof tooBigMsg === 'string' ? tooBigMsg : 'Value too big'

@@ -113,10 +113,10 @@
       "invalidUrl": "URL inválida",
       "stringTooShort": "A string deve conter pelo menos {{minimum}} caractere(s)",
       "stringTooLong": "A string deve conter no máximo {{maximum}} caractere(s)",
-      "numberTooSmall": "O número deve ser maior ou igual a {{minimum}}",
-      "numberTooBig": "O número deve ser menor ou igual a {{maximum}}",
-      "tooSmall": "O valor deve ser maior ou igual a {{minimum}}",
-      "tooBig": "O valor deve ser menor ou igual a {{maximum}}",
+      "numberTooSmall": "Deve ser ≥ {{minimum}}",
+      "numberTooBig": "Deve ser ≤ {{maximum}}",
+      "tooSmall": "Deve ser ≥ {{minimum}}",
+      "tooBig": "Deve ser ≤ {{maximum}}",
       "invalidEnum": "Valor de enum inválido. Esperado {{options}}, recebido {{received}}"
     },
     "name": {
