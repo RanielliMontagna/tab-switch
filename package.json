@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.7",
+    "@tailwindcss/vite": "^4.1.17",
     "@types/chrome": "^0.0.287",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
@@ -48,7 +49,7 @@
     "autoprefixer": "^10.4.22",
     "lefthook": "^2.0.4",
     "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.15",
+    "tailwindcss": "^4.1.17",
     "typescript": "~5.9.3",
     "vite": "^5.4.10",
     "vite-tsconfig-paths": "^5.1.4"
