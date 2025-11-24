@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { TabSchema } from '../home.schema'
 import { useHome } from '../useHome'
@@ -123,8 +123,13 @@ describe('useHome', () => {
   })
 
   describe('Initialization', () => {
-    it('should initialize with default values', () => {
+    it('should initialize with default values', async () => {
       const { result } = renderHook(() => useHome())
+
+      // Wait for useEffect to complete
+      await waitFor(() => {
+        expect(mockSessions.loadSessions).toHaveBeenCalled()
+      })
 
       expect(result.current.tabs).toEqual(mockTabs)
       expect(result.current.activeSwitch).toBe(false)
@@ -155,7 +160,9 @@ describe('useHome', () => {
         interval: 8000,
       }
 
-      await result.current.handleSubmit(formData)
+      await act(async () => {
+        await result.current.handleSubmit(formData)
+      })
 
       await waitFor(() => {
         expect(mockSessions.updateCurrentSessionTabs).toHaveBeenCalled()
@@ -173,7 +180,9 @@ describe('useHome', () => {
         interval: 8000,
       }
 
-      await result.current.handleSubmit(formData)
+      await act(async () => {
+        await result.current.handleSubmit(formData)
+      })
 
       await waitFor(() => {
         const updateCall = mockSessions.updateCurrentSessionTabs.mock.calls[0]?.[0]
@@ -194,7 +203,9 @@ describe('useHome', () => {
         interval: 1000, // Below minimum of 5000
       }
 
-      await result.current.handleSubmit(formData)
+      await act(async () => {
+        await result.current.handleSubmit(formData)
+      })
 
       await waitFor(() => {
         const updateCall = mockSessions.updateCurrentSessionTabs.mock.calls[0]?.[0]
@@ -214,7 +225,9 @@ describe('useHome', () => {
         interval: '10000' as unknown as number,
       }
 
-      await result.current.handleSubmit(formData)
+      await act(async () => {
+        await result.current.handleSubmit(formData)
+      })
 
       await waitFor(() => {
         const updateCall = mockSessions.updateCurrentSessionTabs.mock.calls[0]?.[0]
@@ -234,7 +247,9 @@ describe('useHome', () => {
         interval: 7500.7,
       }
 
-      await result.current.handleSubmit(formData)
+      await act(async () => {
+        await result.current.handleSubmit(formData)
+      })
 
       await waitFor(() => {
         const updateCall = mockSessions.updateCurrentSessionTabs.mock.calls[0]?.[0]
@@ -256,7 +271,9 @@ describe('useHome', () => {
         interval: 8000,
       }
 
-      await result.current.handleSubmit(formData)
+      await act(async () => {
+        await result.current.handleSubmit(formData)
+      })
 
       await waitFor(() => {
         expect(result.current.isSaving).toBe(false)
@@ -280,12 +297,14 @@ describe('useHome', () => {
         { id: 3, name: 'Tab 3', url: 'https://example.net', interval: 6000 },
       ]
 
-      mockUseSessions.mockReturnValue({
-        ...mockSessions,
-        currentSessionTabs: newTabs,
-      } as ReturnType<typeof useSessions>)
+      await act(async () => {
+        mockUseSessions.mockReturnValue({
+          ...mockSessions,
+          currentSessionTabs: newTabs,
+        } as ReturnType<typeof useSessions>)
 
-      rerender()
+        rerender()
+      })
 
       await waitFor(() => {
         expect(result.current.tabs).toEqual(newTabs)
@@ -335,7 +354,9 @@ describe('useHome', () => {
     it('should handle load error gracefully', async () => {
       mockSessions.loadSessions.mockRejectedValueOnce(new Error('Load error'))
 
-      renderHook(() => useHome())
+      await act(async () => {
+        renderHook(() => useHome())
+      })
 
       await waitFor(() => {
         expect(mockSessions.loadSessions).toHaveBeenCalled()
@@ -345,7 +366,9 @@ describe('useHome', () => {
     it('should handle rotation state load error', async () => {
       mockRotationControl.loadRotationState.mockRejectedValueOnce(new Error('Rotation error'))
 
-      renderHook(() => useHome())
+      await act(async () => {
+        renderHook(() => useHome())
+      })
 
       await waitFor(() => {
         expect(mockRotationControl.loadRotationState).toHaveBeenCalled()
@@ -368,7 +391,9 @@ describe('useHome', () => {
         interval: 5000,
       }
 
-      await result.current.handleSubmit(formData)
+      await act(async () => {
+        await result.current.handleSubmit(formData)
+      })
 
       await waitFor(() => {
         const updateCall = mockSessions.updateCurrentSessionTabs.mock.calls[0]?.[0]
