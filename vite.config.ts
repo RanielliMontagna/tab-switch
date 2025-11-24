@@ -28,8 +28,8 @@ export default defineConfig({
   build: {
     outDir: 'build',
     // Optimize bundle size
-    minify: 'esbuild',
-    sourcemap: false,
+    minify: process.env.NODE_ENV === 'production' ? 'esbuild' : false,
+    sourcemap: process.env.NODE_ENV === 'development' ? 'inline' : false,
     rollupOptions: {
       input: {
         main: './index.html',
