@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   TABS: 'tabs',
   SWITCH: 'switch',
   IS_PAUSED: 'isPaused',
+  THEME: 'theme',
 } as const
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]

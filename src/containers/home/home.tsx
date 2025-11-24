@@ -8,10 +8,12 @@ import {
   GripVertical,
   Info,
   Loader2,
+  Moon,
   Pause,
   Play,
   RotateCwSquare,
   Save,
+  Sun,
   Trash2,
   XCircle,
 } from 'lucide-react'
@@ -29,6 +31,7 @@ import {
 } from '@/components/ui/table'
 import { INTERVAL, UI, VALIDATION } from '@/constants'
 import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcut'
+import { useTheme } from '@/hooks/use-theme'
 import { useUrlValidation } from '@/hooks/use-url-validation'
 import { minInterval } from './home.schema'
 import { useHome } from './useHome'
@@ -76,6 +79,7 @@ function HomeComponent() {
   } = useHome()
 
   const { t } = useTranslation()
+  const { effectiveTheme, toggleTheme, mounted } = useTheme()
 
   // Get current URL value from form
   const urlValue = methods.watch('url')
@@ -106,6 +110,21 @@ function HomeComponent() {
               </div>
             </div>
             <div className="flex items-center space-x-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={toggleTheme}
+                aria-label={t('theme.ariaLabel')}
+                className="focus:ring-2 focus:ring-offset-2"
+                disabled={!mounted}
+              >
+                {mounted && effectiveTheme === 'dark' ? (
+                  <Sun size={UI.ICON_SIZE} aria-hidden="true" />
+                ) : (
+                  <Moon size={UI.ICON_SIZE} aria-hidden="true" />
+                )}
+              </Button>
               <Switch
                 id="switch-mode"
                 checked={activeSwitch}

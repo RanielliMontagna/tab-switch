@@ -91,5 +91,11 @@
   "toastSwitchError": {
     "title": "Falha ao alterar",
     "description": "Ocorreu um erro ao alterar o estado da chave. Por favor, tente novamente."
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Escuro",
+    "toggle": "Alternar tema",
+    "ariaLabel": "Alternar entre tema claro e escuro"
   }
 }

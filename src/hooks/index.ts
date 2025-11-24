@@ -1,5 +1,7 @@
 export { useDebounce } from './use-debounce'
 export { useKeyboardShortcut } from './use-keyboard-shortcut'
+export type { Theme } from './use-theme'
+export { useTheme } from './use-theme'
 export { useToast } from './use-toast'
 export type { UrlValidationResult, UrlValidationStatus } from './use-url-validation'
 export { useUrlValidation } from './use-url-validation'

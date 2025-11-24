@@ -91,5 +91,11 @@
   "toastSwitchError": {
     "title": "Switch failed",
     "description": "An error occurred while changing the switch state. Please try again."
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "toggle": "Toggle theme",
+    "ariaLabel": "Toggle between light and dark theme"
   }
 }
