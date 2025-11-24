@@ -86,3 +86,69 @@ export function normalizeUrl(url: string): string {
     return sanitized
   }
 }
+
+/**
+ * Generate a readable name from a URL
+ * Extracts the domain and formats it nicely
+ * @param url - URL string to generate name from
+ * @returns Generated name or empty string if URL is invalid
+ */
+export function generateNameFromUrl(url: string): string {
+  if (!url || typeof url !== 'string') {
+    return ''
+  }
+
+  try {
+    // Try to parse the URL
+    let urlToParse = url.trim()
+
+    // Add protocol if missing
+    if (!urlToParse.startsWith('http://') && !urlToParse.startsWith('https://')) {
+      urlToParse = `https://${urlToParse}`
+    }
+
+    const parsed = new URL(urlToParse)
+    let hostname = parsed.hostname.toLowerCase()
+
+    // Remove www. prefix if present
+    if (hostname.startsWith('www.')) {
+      hostname = hostname.substring(4)
+    }
+
+    // Remove port if present
+    const hostnameWithoutPort = hostname.split(':')[0]
+
+    // Capitalize first letter
+    const capitalized = hostnameWithoutPort.charAt(0).toUpperCase() + hostnameWithoutPort.slice(1)
+
+    return capitalized
+  } catch {
+    // If URL parsing fails, try to extract domain manually
+    try {
+      let domain = url.trim()
+
+      // Remove protocol
+      domain = domain.replace(/^https?:\/\//i, '')
+
+      // Remove www.
+      domain = domain.replace(/^www\./i, '')
+
+      // Remove path, query, and hash
+      domain = domain.split('/')[0]
+      domain = domain.split('?')[0]
+      domain = domain.split('#')[0]
+
+      // Remove port
+      domain = domain.split(':')[0]
+
+      // Capitalize first letter
+      if (domain) {
+        return domain.charAt(0).toUpperCase() + domain.slice(1).toLowerCase()
+      }
+
+      return ''
+    } catch {
+      return ''
+    }
+  }
+}

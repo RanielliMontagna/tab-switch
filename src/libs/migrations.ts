@@ -6,7 +6,7 @@
 import { z } from 'zod'
 import { INTERVAL } from '@/constants'
 import { TabSchema, tabSchema } from '@/containers/home/home.schema'
-import { isValidUrl, normalizeUrl } from '@/utils/url'
+import { generateNameFromUrl, isValidUrl, normalizeUrl } from '@/utils/url'
 import { logger } from './logger'
 
 // Current data version
@@ -72,8 +72,8 @@ function migrateTabsV0ToV1(legacyTabs: unknown): TabSchema[] {
         interval = INTERVAL.MIN
       }
 
-      // Ensure name exists
-      const name = parsed.name || url || `Tab ${id}`
+      // Generate name from URL if name is not provided
+      const name = parsed.name?.trim() || generateNameFromUrl(url) || `Tab ${id}`
 
       // Create migrated tab
       const migratedTab: TabSchema = {

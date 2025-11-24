@@ -242,7 +242,7 @@ function HomeComponent() {
             </div>
           </header>
           {showSessionManager && (
-            <div className="mx-4 mb-4 p-4 border rounded-lg bg-background">
+            <div className="m-2 mt-4 mb-0 p-4 border rounded-lg bg-background">
               <SessionManager
                 sessions={sessions}
                 currentSessionId={currentSessionId}
@@ -344,7 +344,12 @@ function HomeComponent() {
                                     aria-hidden="true"
                                   />
                                 ) : (
-                                  <Trash2 size={UI.ICON_SIZE} className="mr-1" aria-hidden="true" />
+                                  <Trash2
+                                    size={UI.ICON_SIZE}
+                                    style={{ minWidth: `${UI.ICON_SIZE}px` }}
+                                    className="mr-1"
+                                    aria-hidden="true"
+                                  />
                                 )}
                                 {t('table.delete')}
                               </Button>
@@ -364,7 +369,6 @@ function HomeComponent() {
                       control={methods.control}
                       name="name"
                       placeholder={t('table.namePlaceholder')}
-                      required
                     />
                   </TableCell>
                   <TableCell className="align-top">
