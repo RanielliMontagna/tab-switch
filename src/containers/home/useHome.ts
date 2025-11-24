@@ -17,6 +17,10 @@ export function useHome() {
   const { toast } = useToast()
   const [tabs, setTabs] = useState<TabSchema[]>([])
   const [activeSwitch, setActiveSwitch] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  const [isReordering, setIsReordering] = useState(false)
 
   const methods = useForm<TabSchema>({
     resolver: zodResolver(newTabSchema),
@@ -30,6 +34,7 @@ export function useHome() {
   })
 
   async function handleSubmit(data: TabSchema) {
+    setIsSaving(true)
     try {
       const newTabs = [...tabs, data]
       setTabs(newTabs)
@@ -52,10 +57,13 @@ export function useHome() {
         description: t('toastSaveError.description'),
         variant: 'destructive',
       })
+    } finally {
+      setIsSaving(false)
     }
   }
 
   const loadTabs = useCallback(async () => {
+    setIsLoading(true)
     try {
       const loadedTabs = await getStorageItem<TabSchema[]>(STORAGE_KEYS.TABS)
       if (loadedTabs) {
@@ -73,11 +81,20 @@ export function useHome() {
         description: t('toastLoadError.description'),
         variant: 'destructive',
       })
+    } finally {
+      setIsLoading(false)
     }
   }, [t, toast])
 
   async function handleRemoveTab(index: number) {
+    const tabToDelete = tabs[index]
+    if (!tabToDelete) return
+
+    setIsDeleting(tabToDelete.name)
     try {
+      // Add a small delay for visual feedback
+      await new Promise((resolve) => setTimeout(resolve, 200))
+
       const newTabs = tabs.filter((_, i) => i !== index)
 
       setTabs(newTabs)
@@ -91,6 +108,8 @@ export function useHome() {
         description: t('toastDeleteError.description'),
         variant: 'destructive',
       })
+    } finally {
+      setIsDeleting(null)
     }
   }
 
@@ -110,6 +129,7 @@ export function useHome() {
     }
 
     if (active.id !== over?.id) {
+      setIsReordering(true)
       try {
         const oldIndex = tabs.findIndex((tab) => tab.name === active.id)
         const newIndex = tabs.findIndex((tab) => tab.name === over?.id)
@@ -129,6 +149,9 @@ export function useHome() {
           description: t('toastReorderError.description'),
           variant: 'destructive',
         })
+      } finally {
+        // Small delay for visual feedback
+        setTimeout(() => setIsReordering(false), 300)
       }
     }
   }
@@ -285,6 +308,10 @@ export function useHome() {
     tabs,
     methods,
     activeSwitch,
+    isLoading,
+    isSaving,
+    isDeleting,
+    isReordering,
     importTabs,
     exportTabs,
     handleSubmit,

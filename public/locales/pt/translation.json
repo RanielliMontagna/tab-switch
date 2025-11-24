@@ -11,7 +11,8 @@
     "interval": "Intervalo (ms)",
     "action": "Ação",
     "delete": "Deletar",
-    "save": "Salvar"
+    "save": "Salvar",
+    "saving": "Salvando..."
   },
   "infoOpen": "Quando ativado, outras abas abertas serão fechadas automaticamente.",
   "import": "Importar",

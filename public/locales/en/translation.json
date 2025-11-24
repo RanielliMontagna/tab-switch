@@ -11,7 +11,8 @@
     "interval": "Interval (ms)",
     "action": "Action",
     "delete": "Delete",
-    "save": "Save"
+    "save": "Save",
+    "saving": "Saving..."
   },
   "infoOpen": "When activated, other open tabs will be closed automatically.",
   "import": "Import",

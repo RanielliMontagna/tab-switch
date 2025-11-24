@@ -13,7 +13,7 @@ import {
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import Logo from '@/assets/logo.svg'
-import { Button, CustomInput, Form, Label, Switch } from '@/components'
+import { Button, CustomInput, Form, Label, Skeleton, Switch } from '@/components'
 import {
   Table,
   TableBody,
@@ -47,6 +47,10 @@ function HomeComponent() {
     tabs,
     methods,
     activeSwitch,
+    isLoading,
+    isSaving,
+    isDeleting,
+    isReordering,
     exportTabs,
     importTabs,
     handleSubmit,
@@ -93,31 +97,70 @@ function HomeComponent() {
               <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={tabs.map((tab) => tab.name)}>
                   <TableBody className="overflow-hidden">
-                    {tabs.map((tab) => (
-                      <SortableItem key={tab.name} id={tab.name}>
-                        <TableCell className="cursor-move">
-                          <GripVertical size={UI.ICON_SIZE} className="ml-1" />
-                        </TableCell>
-                        <TableCell>{tab.name}</TableCell>
-                        <TableCell>
-                          <a
-                            href={tab.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-blue-500 underline hover:font-bold transition-all"
-                          >
-                            {tab.url}
-                          </a>
-                        </TableCell>
-                        <TableCell>{tab.interval} ms</TableCell>
-                        <TableCell className="position-relative">
-                          <Button id="delete" type="button" className="w-24" variant="outline">
-                            <Trash2 size={UI.ICON_SIZE} className="mr-1" />
-                            {t('table.delete')}
-                          </Button>
-                        </TableCell>
-                      </SortableItem>
-                    ))}
+                    {isLoading
+                      ? // Skeleton loader while loading
+                        Array.from({ length: 3 }, (_, index) => (
+                          <TableRow key={`skeleton-${Date.now()}-${index}`}>
+                            <TableCell>
+                              <Skeleton className="h-4 w-4" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-20" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-48" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-16" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-8 w-24" />
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      : tabs.map((tab) => (
+                          <SortableItem key={tab.name} id={tab.name}>
+                            <TableCell
+                              className={`cursor-move transition-opacity ${
+                                isDeleting === tab.name ? 'opacity-50' : ''
+                              } ${isReordering ? 'opacity-70' : ''}`}
+                            >
+                              <GripVertical size={UI.ICON_SIZE} className="ml-1" />
+                            </TableCell>
+                            <TableCell className={isDeleting === tab.name ? 'opacity-50' : ''}>
+                              {tab.name}
+                            </TableCell>
+                            <TableCell className={isDeleting === tab.name ? 'opacity-50' : ''}>
+                              <a
+                                href={tab.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-blue-500 underline hover:font-bold transition-all"
+                              >
+                                {tab.url}
+                              </a>
+                            </TableCell>
+                            <TableCell className={isDeleting === tab.name ? 'opacity-50' : ''}>
+                              {tab.interval} ms
+                            </TableCell>
+                            <TableCell className="position-relative">
+                              <Button
+                                id="delete"
+                                type="button"
+                                className="w-24"
+                                variant="outline"
+                                disabled={isDeleting === tab.name}
+                              >
+                                {isDeleting === tab.name ? (
+                                  <div className="mr-1 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                ) : (
+                                  <Trash2 size={UI.ICON_SIZE} className="mr-1" />
+                                )}
+                                {t('table.delete')}
+                              </Button>
+                            </TableCell>
+                          </SortableItem>
+                        ))}
                   </TableBody>
                 </SortableContext>
               </DndContext>
@@ -172,9 +215,18 @@ function HomeComponent() {
                     />
                   </TableCell>
                   <TableCell className="align-top">
-                    <Button type="submit" className="w-24">
-                      <Save size={UI.ICON_SIZE} className="mr-1" />
-                      {t('table.save')}
+                    <Button type="submit" className="w-24" disabled={isSaving}>
+                      {isSaving ? (
+                        <>
+                          <div className="mr-1 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          {t('table.saving')}
+                        </>
+                      ) : (
+                        <>
+                          <Save size={UI.ICON_SIZE} className="mr-1" />
+                          {t('table.save')}
+                        </>
+                      )}
                     </Button>
                   </TableCell>
                 </TableRow>
