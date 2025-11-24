@@ -5,40 +5,7 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tab Switch</title>
-    <script>
-      // Apply theme before React renders to prevent flash
-      (() => {
-        const isChromeExtension = typeof chrome !== 'undefined' && !!chrome.runtime?.id && !!chrome.storage
-        const getSystemTheme = () => {
-          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-        }
-
-        function applyTheme(theme) {
-          const root = document.documentElement
-          const effectiveTheme = theme === 'system' ? getSystemTheme() : theme
-          if (effectiveTheme === 'dark') {
-            root.classList.add('dark')
-          } else {
-            root.classList.remove('dark')
-          }
-        }
-
-        if (isChromeExtension) {
-          chrome.storage.local.get('theme', (result) => {
-            const theme = result.theme || 'system'
-            applyTheme(theme)
-          })
-        } else {
-          try {
-            const savedTheme = localStorage.getItem('theme')
-            const theme = savedTheme ? JSON.parse(savedTheme) : 'system'
-            applyTheme(theme)
-          } catch {
-            applyTheme('system')
-          }
-        }
-      })()
-    </script>
+    <script type="module" src="/src/theme-init.ts"></script>
   </head>
   <body>
     <div id="root"></div>
