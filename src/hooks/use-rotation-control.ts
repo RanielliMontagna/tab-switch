@@ -7,8 +7,10 @@ import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type {
   BackgroundMessage,
+  GetRotationStateMessage,
   PauseRotationMessage,
   ResumeRotationMessage,
+  RotationStateResponse,
 } from '@/@types/messages'
 import { VALIDATION } from '@/constants'
 import type { TabSchema } from '@/containers/home/home.schema'
@@ -39,21 +41,73 @@ export function useRotationControl(tabs: TabSchema[]) {
   const [isPaused, setIsPaused] = useState(false)
 
   /**
-   * Loads rotation state from storage
+   * Loads rotation state from storage and syncs with background script
    */
   const loadRotationState = useCallback(async () => {
-    const loadedSwitch = await getStorageItem<boolean>(STORAGE_KEYS.SWITCH)
-    if (loadedSwitch !== null && loadedSwitch !== undefined) {
-      setActiveSwitch(loadedSwitch)
-      logger.debug(`Loaded switch state from storage: ${loadedSwitch}`)
-    } else {
-      logger.debug('No switch state found in storage, defaulting to false')
-      setActiveSwitch(false)
-    }
+    try {
+      // First, try to get the actual state from background script
+      const getStateMessage: GetRotationStateMessage = { action: 'getState' }
 
-    const loadedPaused = await getStorageItem<boolean>(STORAGE_KEYS.IS_PAUSED)
-    if (loadedPaused !== null) {
-      setIsPaused(loadedPaused)
+      try {
+        const stateResponse = await new Promise<RotationStateResponse>((resolve, reject) => {
+          chrome.runtime.sendMessage(getStateMessage, (response) => {
+            if (chrome.runtime.lastError) {
+              logger.warn(
+                'Could not get rotation state from background:',
+                chrome.runtime.lastError.message
+              )
+              reject(chrome.runtime.lastError)
+            } else if (response && typeof response === 'object' && 'isActive' in response) {
+              resolve(response as RotationStateResponse)
+            } else {
+              // Fallback: assume no active rotation if response is invalid
+              resolve({
+                status: 'ok',
+                success: true,
+                isActive: false,
+                isPaused: false,
+              })
+            }
+          })
+        })
+
+        // Sync state from background script (source of truth)
+        if (stateResponse.success && stateResponse.isActive !== undefined) {
+          setActiveSwitch(stateResponse.isActive)
+          setIsPaused(stateResponse.isPaused || false)
+
+          // Update storage to match background state
+          await setStorageItem(STORAGE_KEYS.SWITCH, stateResponse.isActive)
+          await setStorageItem(STORAGE_KEYS.IS_PAUSED, stateResponse.isPaused || false)
+
+          logger.debug(
+            `Synced rotation state from background: active=${stateResponse.isActive}, paused=${stateResponse.isPaused}`
+          )
+          return
+        }
+      } catch (error) {
+        logger.warn('Failed to get rotation state from background, falling back to storage:', error)
+      }
+
+      // Fallback: load from storage if background script is not available
+      const loadedSwitch = await getStorageItem<boolean>(STORAGE_KEYS.SWITCH)
+      if (loadedSwitch !== null && loadedSwitch !== undefined) {
+        setActiveSwitch(loadedSwitch)
+        logger.debug(`Loaded switch state from storage: ${loadedSwitch}`)
+      } else {
+        logger.debug('No switch state found in storage, defaulting to false')
+        setActiveSwitch(false)
+      }
+
+      const loadedPaused = await getStorageItem<boolean>(STORAGE_KEYS.IS_PAUSED)
+      if (loadedPaused !== null) {
+        setIsPaused(loadedPaused)
+      }
+    } catch (error) {
+      logger.error('Error loading rotation state:', error)
+      // Default to inactive on error
+      setActiveSwitch(false)
+      setIsPaused(false)
     }
   }, [])
 

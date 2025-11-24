@@ -30,6 +30,13 @@ export interface ResumeRotationMessage {
 }
 
 /**
+ * Message sent from popup to background script to get rotation state
+ */
+export interface GetRotationStateMessage {
+  action: 'getState'
+}
+
+/**
  * Union type for all messages sent to background script
  */
 export type BackgroundMessage =
@@ -37,12 +44,24 @@ export type BackgroundMessage =
   | StopRotationMessage
   | PauseRotationMessage
   | ResumeRotationMessage
+  | GetRotationStateMessage
 
 /**
  * Response from background script
  */
 export interface BackgroundResponse {
   status: string
+  success?: boolean
+  message?: string
+}
+
+/**
+ * Response from background script for getState action
+ */
+export interface RotationStateResponse extends BackgroundResponse {
+  isActive: boolean
+  isPaused: boolean
+  tabsCount?: number
 }
 
 /**

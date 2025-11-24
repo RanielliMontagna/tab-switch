@@ -34,11 +34,54 @@ export interface TabCreationResult {
 }
 
 /**
- * Creates a single browser tab
+ * Normalizes a URL for comparison (removes trailing slashes, normalizes protocol)
+ * @param url - URL to normalize
+ * @returns Normalized URL string
+ */
+function normalizeUrlForComparison(url: string): string {
+  try {
+    const urlObj = new URL(url)
+    // Normalize: remove trailing slash from pathname, lowercase hostname
+    const normalizedPath = urlObj.pathname.replace(/\/$/, '') || '/'
+    return `${urlObj.protocol}//${urlObj.hostname.toLowerCase()}${normalizedPath}${urlObj.search}${urlObj.hash}`
+  } catch {
+    // If URL is invalid, return as-is for comparison
+    return url.toLowerCase()
+  }
+}
+
+/**
+ * Finds an existing tab with the same URL
+ * @param url - URL to search for
+ * @param existingTabs - Array of existing tabs to search in
+ * @returns Tab ID if found, null otherwise
+ */
+function findExistingTabByUrl(url: string, existingTabs: chrome.tabs.Tab[]): number | null {
+  const normalizedUrl = normalizeUrlForComparison(url)
+
+  for (const tab of existingTabs) {
+    if (tab.url && tab.id !== undefined) {
+      const normalizedTabUrl = normalizeUrlForComparison(tab.url)
+      if (normalizedTabUrl === normalizedUrl) {
+        logger.debug(`Found existing tab for ${url}: ID ${tab.id}`)
+        return tab.id
+      }
+    }
+  }
+
+  return null
+}
+
+/**
+ * Creates a single browser tab or reuses existing one
  * @param tab - Tab configuration (name, url, interval)
+ * @param existingTabs - Array of existing tabs to check for reuse
  * @returns Promise resolving to tab ID and interval, or null if creation failed
  */
-async function createSingleTab(tab: TabSchema): Promise<TabWithInterval | null> {
+async function createOrReuseTab(
+  tab: TabSchema,
+  existingTabs: chrome.tabs.Tab[]
+): Promise<TabWithInterval | null> {
   try {
     // Validate URL security before creating tab
     if (!validateUrlForTabCreation(tab.url)) {
@@ -46,12 +89,20 @@ async function createSingleTab(tab: TabSchema): Promise<TabWithInterval | null> 
       return null
     }
 
+    // Check if a tab with this URL already exists
+    const existingTabId = findExistingTabByUrl(tab.url, existingTabs)
+    if (existingTabId !== null) {
+      logger.debug(`Reusing existing tab: ${tab.name || tab.url} (ID: ${existingTabId})`)
+      return { id: existingTabId, interval: tab.interval }
+    }
+
+    // No existing tab found, create a new one
     const createdTab = await promisifyChromeApi<chrome.tabs.Tab>((callback) =>
       chrome.tabs.create({ url: tab.url }, callback)
     )
 
     if (createdTab?.id) {
-      logger.debug(`Created tab: ${tab.name || tab.url} (ID: ${createdTab.id})`)
+      logger.debug(`Created new tab: ${tab.name || tab.url} (ID: ${createdTab.id})`)
       return { id: createdTab.id, interval: tab.interval }
     }
 
@@ -65,6 +116,7 @@ async function createSingleTab(tab: TabSchema): Promise<TabWithInterval | null> 
 
 /**
  * Creates multiple browser tabs based on provided configurations
+ * Reuses existing tabs when they have the same URL to avoid closing and reopening
  * @param tabConfigs - Array of tab configurations to create
  * @returns Promise resolving to creation result with successful tabs and errors
  */
@@ -96,10 +148,19 @@ export async function createTabs(tabConfigs: TabSchema[]): Promise<TabCreationRe
     return result
   }
 
-  // Create all tabs in parallel
+  // Get all existing tabs to check for reuse
+  const existingTabs = await promisifyChromeApi<chrome.tabs.Tab[]>((callback) =>
+    chrome.tabs.query({}, callback)
+  )
+
+  if (!existingTabs) {
+    logger.warn('Failed to query existing tabs, will create new ones')
+  }
+
+  // Create or reuse tabs
   const creationResults = await Promise.all(
     tabConfigs.map(async (tab) => {
-      const created = await createSingleTab(tab)
+      const created = await createOrReuseTab(tab, existingTabs || [])
       if (created) {
         return { success: true, tab: created } as const
       }
@@ -107,7 +168,7 @@ export async function createTabs(tabConfigs: TabSchema[]): Promise<TabCreationRe
         success: false,
         error: {
           tab: tab.name || tab.url,
-          error: `Failed to create tab: ${tab.name || tab.url}`,
+          error: `Failed to create or reuse tab: ${tab.name || tab.url}`,
         },
       } as const
     })
@@ -132,6 +193,7 @@ export async function createTabs(tabConfigs: TabSchema[]): Promise<TabCreationRe
 
 /**
  * Removes tabs that are not in the provided list of tab IDs
+ * Only removes tabs that are not part of the rotation
  * @param keepTabIds - Array of tab IDs to keep (all others will be removed)
  * @returns Promise resolving to number of tabs removed
  */
@@ -146,11 +208,14 @@ export async function removeOtherTabs(keepTabIds: number[]): Promise<number> {
       return 0
     }
 
+    // Filter tabs that are not in the rotation
+    // Keep tabs that are in keepTabIds (rotation tabs)
     const tabsToRemove = allTabs.filter(
       (tab) => tab.id !== undefined && !keepTabIds.includes(tab.id)
     )
 
     if (tabsToRemove.length === 0) {
+      logger.debug('No tabs to remove - all tabs are in rotation')
       return 0
     }
 

@@ -1,11 +1,19 @@
 import type {
+  GetRotationStateMessage,
   PauseRotationMessage,
   ResumeRotationMessage,
+  RotationStateResponse,
   StartRotationMessage,
 } from '@/@types/messages'
 import { logger } from '@/libs/logger'
 import { createTabs, removeOtherTabs } from '@/libs/tab-management'
-import { pauseRotation, resumeRotation, startRotation, stopRotation } from '@/libs/tab-rotation'
+import {
+  getRotationState,
+  pauseRotation,
+  resumeRotation,
+  startRotation,
+  stopRotation,
+} from '@/libs/tab-rotation'
 
 /**
  * Message listener for Chrome extension runtime messages
@@ -22,11 +30,27 @@ chrome.runtime.onMessage.addListener(
       | StartRotationMessage
       | { status: false }
       | PauseRotationMessage
-      | ResumeRotationMessage,
+      | ResumeRotationMessage
+      | GetRotationStateMessage,
     _sender,
     sendResponse
   ): Promise<boolean> => {
     try {
+      // Handle getState action - return current rotation state
+      if ('action' in message && message.action === 'getState') {
+        const rotationState = getRotationState()
+        const isActive = rotationState.currentTabs !== null && rotationState.currentTabs.length > 0
+        const response: RotationStateResponse = {
+          status: 'ok',
+          success: true,
+          isActive,
+          isPaused: rotationState.isPaused,
+          tabsCount: rotationState.currentTabs?.length || 0,
+        }
+        sendResponse(response)
+        return true
+      }
+
       // Handle pause action
       if ('action' in message && message.action === 'pause') {
         pauseRotation()
