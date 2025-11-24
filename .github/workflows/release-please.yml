@@ -1,53 +1,53 @@
 name: Release Please
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 permissions:
-    contents: write
-    pull-requests: write
+  contents: write
+  pull-requests: write
 
 jobs:
-    release-please:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: google-github-actions/release-please-action@v4
-              id: release
-              with:
-                  config-file: .release-please-config.json
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v4
+        id: release
+        with:
+          config-file: .release-please-config.json
 
-            - uses: actions/checkout@v4
-              if: ${{ steps.release.outputs.release_created }}
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.release_created }}
 
-            - uses: pnpm/action-setup@v4
-              if: ${{ steps.release.outputs.release_created }}
-              with:
-                  version: 9
+      - uses: pnpm/action-setup@v4
+        if: ${{ steps.release.outputs.release_created }}
+        with:
+          version: 9
 
-            - uses: actions/setup-node@v4
-              if: ${{ steps.release.outputs.release_created }}
-              with:
-                  node-version: "20"
-                  cache: "pnpm"
+      - uses: actions/setup-node@v4
+        if: ${{ steps.release.outputs.release_created }}
+        with:
+          node-version: "20"
+          cache: "pnpm"
 
-            - name: Install dependencies
-              if: ${{ steps.release.outputs.release_created }}
-              run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        if: ${{ steps.release.outputs.release_created }}
+        run: pnpm install --frozen-lockfile
 
-            - name: Build
-              if: ${{ steps.release.outputs.release_created }}
-              run: pnpm build
+      - name: Build
+        if: ${{ steps.release.outputs.release_created }}
+        run: pnpm build
 
-            - name: Create Release
-              if: ${{ steps.release.outputs.release_created }}
-              uses: softprops/action-gh-release@v2
-              with:
-                  tag_name: ${{ steps.release.outputs.tag_name }}
-                  name: ${{ steps.release.outputs.tag_name }}
-                  body: ${{ steps.release.outputs.release_notes }}
-                  draft: false
-                  prerelease: false
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release
+        if: ${{ steps.release.outputs.release_created }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release.outputs.tag_name }}
+          name: ${{ steps.release.outputs.tag_name }}
+          body: ${{ steps.release.outputs.release_notes }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

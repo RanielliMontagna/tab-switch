@@ -14,6 +14,12 @@ import {
   startRotation,
   stopRotation,
 } from '@/libs/tab-rotation'
+import {
+  notifyRotationPaused,
+  notifyRotationResumed,
+  notifyRotationStarted,
+  notifyRotationStopped,
+} from '@/utils/notifications'
 
 /**
  * Message listener for Chrome extension runtime messages
@@ -54,6 +60,9 @@ chrome.runtime.onMessage.addListener(
       // Handle pause action
       if ('action' in message && message.action === 'pause') {
         pauseRotation()
+        notifyRotationPaused().catch((error) => {
+          logger.error('Error showing pause notification:', error)
+        })
         sendResponse({ status: 'Rotation paused', success: true })
         return true
       }
@@ -62,6 +71,9 @@ chrome.runtime.onMessage.addListener(
       if ('action' in message && message.action === 'resume') {
         const resumed = resumeRotation()
         if (resumed) {
+          notifyRotationResumed().catch((error) => {
+            logger.error('Error showing resume notification:', error)
+          })
           sendResponse({ status: 'Rotation resumed', success: true })
         } else {
           sendResponse({
@@ -76,6 +88,9 @@ chrome.runtime.onMessage.addListener(
       // Handle stop action
       if (!message.status) {
         stopRotation()
+        notifyRotationStopped().catch((error) => {
+          logger.error('Error showing stop notification:', error)
+        })
         sendResponse({ status: 'Rotation stopped', success: true })
         return true
       }
@@ -97,6 +112,9 @@ chrome.runtime.onMessage.addListener(
 
       // Start rotation with created tabs
       startRotation(creationResult.tabs)
+      notifyRotationStarted(creationResult.tabs.length).catch((error) => {
+        logger.error('Error showing start notification:', error)
+      })
       sendResponse({ status: 'Rotation started', success: true })
       return true
     } catch (error) {

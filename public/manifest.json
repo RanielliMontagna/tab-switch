@@ -3,7 +3,7 @@
   "name": "Tab Switch",
   "version": "1.0.0",
   "description": "Switch between tabs automatically",
-  "permissions": ["storage", "tabs"],
+  "permissions": ["storage", "tabs", "notifications"],
   "icons": {
     "16": "favicon/favicon-96x96.png",
     "48": "favicon/favicon-96x96.png",
