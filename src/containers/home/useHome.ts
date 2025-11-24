@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { DragEndEvent } from '@dnd-kit/core'
 import { useToast } from '@/hooks/use-toast'
 
-import { newTabSchema, TabSchema } from './home.schema'
+import { newTabSchema, TabSchema, tabsFileSchema } from './home.schema'
 
 export function useHome() {
   const { t } = useTranslation()
@@ -83,8 +83,8 @@ export function useHome() {
       //Verify if exist at least two tabs to start the auto refresh
       if (tabs.length <= 1) {
         toast({
-          title: 'Please add at least one tab!',
-          description: 'You need to add at least one tab to start the auto refresh.',
+          title: t('toastLeastOneTab.title'),
+          description: t('toastLeastOneTab.description'),
           variant: 'destructive',
         })
 
@@ -138,19 +138,37 @@ export function useHome() {
         const reader = new FileReader()
 
         reader.onload = async (e) => {
-          const content = e.target?.result as string
-          const parsed = JSON.parse(content)
+          const showImportError = () => {
+            toast({
+              title: t('toastImportError.title'),
+              description: t('toastImportError.description'),
+              variant: 'destructive',
+            })
+          }
 
-          setTabs(parsed)
+          try {
+            const content = e.target?.result as string
+            const parsed = JSON.parse(content)
+            const result = tabsFileSchema.safeParse(parsed)
 
-          // Save the form data to local storage
-          localStorage.setItem('tabs', JSON.stringify(parsed))
+            if (!result.success) {
+              showImportError()
+              return
+            }
 
-          toast({
-            title: t('toastImportSuccess.title'),
-            description: `${parsed.length} ${t('toastImportSuccess.description')}`,
-            variant: 'success',
-          })
+            setTabs(result.data as TabSchema[])
+
+            // Save the form data to local storage
+            localStorage.setItem('tabs', JSON.stringify(result.data))
+
+            toast({
+              title: t('toastImportSuccess.title'),
+              description: `${result.data.length} ${t('toastImportSuccess.description')}`,
+              variant: 'success',
+            })
+          } catch {
+            showImportError()
+          }
         }
 
         reader.readAsText(file)

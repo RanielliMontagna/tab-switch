@@ -32,5 +32,9 @@
   "toastLeastOneTab": {
     "title": "Please add at least two tabs!",
     "description": "You need to add at least two tabs to start automatic rotation."
+  },
+  "toastImportError": {
+    "title": "Import failed",
+    "description": "The selected file is invalid or corrupted."
   }
 }

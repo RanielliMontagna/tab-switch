@@ -30,7 +30,11 @@
     "description": "abas foram importadas com sucesso."
   },
   "toastLeastOneTab": {
-    "title": "Por favor, adicione pelo menos duas aba!",
-    "description": "Você precisa adicionar pelo menos duas aba para iniciar a rotação automática."
+    "title": "Adicione pelo menos duas abas!",
+    "description": "Você precisa adicionar pelo menos duas abas para iniciar a rotação automática."
+  },
+  "toastImportError": {
+    "title": "Falha ao importar",
+    "description": "O arquivo selecionado é inválido ou está corrompido."
   }
 }

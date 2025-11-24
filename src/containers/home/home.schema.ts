@@ -17,5 +17,7 @@ export const tabSchema = newTabSchema.extend({
   id: z.number().int().positive(),
 })
 
+export const tabsFileSchema = z.array(newTabSchema)
+
 export type NewTabSchema = z.infer<typeof newTabSchema>
 export type TabSchema = z.infer<typeof tabSchema>
