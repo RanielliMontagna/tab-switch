@@ -79,6 +79,8 @@ tab-switch/
 │   │   ├── chrome.d.ts  # Tipos do Chrome Extension API
 │   │   └── messages.ts  # Tipos de mensagens entre popup e background
 │   ├── assets/          # Assets estáticos (imagens, SVGs)
+│   ├── background/      # Service worker (background script)
+│   │   └── index.ts
 │   ├── components/      # Componentes React reutilizáveis
 │   │   ├── ui/          # Componentes de UI base (Button, Input, etc.)
 │   │   └── ErrorBoundary.tsx
@@ -86,14 +88,20 @@ tab-switch/
 │   ├── containers/      # Containers/páginas principais
 │   │   └── home/        # Container principal da extensão
 │   ├── hooks/           # Custom hooks React
-│   ├── libs/            # Bibliotecas e utilitários principais
+│   ├── libs/            # Bibliotecas e configurações
 │   │   ├── i18n.ts      # Configuração de internacionalização
 │   │   ├── migrations.ts # Migrações de dados
-│   │   └── storage.ts   # Utilitários de armazenamento
+│   │   ├── storage.ts   # Utilitários de armazenamento
+│   │   ├── tab-management.ts
+│   │   └── tab-rotation.ts
+│   ├── services/        # Serviços e scripts de inicialização
+│   │   └── theme-init.ts
 │   ├── styles/          # Estilos globais
 │   ├── utils/           # Funções utilitárias
+│   │   ├── chrome-api.ts
+│   │   ├── cn/          # Utility para classes CSS
+│   │   └── url.ts
 │   ├── app.tsx          # Componente raiz da aplicação
-│   ├── background.ts    # Service worker (background script)
 │   └── main.tsx         # Ponto de entrada da aplicação
 ├── public/              # Arquivos públicos
 │   ├── locales/         # Arquivos de tradução (i18n)
