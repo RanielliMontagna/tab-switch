@@ -70,8 +70,8 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-y-auto;
     width: 800px;
-    height: 400px;
+    min-height: 400px;
   }
 }

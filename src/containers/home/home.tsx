@@ -80,9 +80,12 @@ function HomeComponent() {
 
   return (
     <Form {...methods}>
-      <form onSubmit={methods.handleSubmit(handleSubmit)} className="p-4">
-        <main>
-          <header className="flex justify-between w-full px-4 py-2">
+      <form
+        onSubmit={methods.handleSubmit(handleSubmit)}
+        className="flex h-full flex-col gap-6 p-4 pb-32"
+      >
+        <main className="flex h-full flex-col">
+          <header className="flex w-full justify-between px-4 py-2">
             <div className="flex items-center space-x-2">
               <img src={Logo} alt="logo" width={UI.LOGO_SIZE} height={UI.LOGO_SIZE} />
               <div className="flex flex-col">
@@ -106,8 +109,8 @@ function HomeComponent() {
               </Label>
             </div>
           </header>
-          <section className="mt-8" aria-label={t('table.title')}>
-            <Table className="overflow-hidden" role="table" aria-label={t('table.title')}>
+          <section className="mt-8 flex-1 overflow-y-auto pr-2" aria-label={t('table.title')}>
+            <Table className="w-full overflow-hidden" role="table" aria-label={t('table.title')}>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10" aria-label={t('table.drag')}></TableHead>
@@ -160,12 +163,15 @@ function HomeComponent() {
                             <TableCell className={isDeleting === tab.name ? 'opacity-50' : ''}>
                               {tab.name}
                             </TableCell>
-                            <TableCell className={isDeleting === tab.name ? 'opacity-50' : ''}>
+                            <TableCell
+                              className={`${isDeleting === tab.name ? 'opacity-50' : ''} max-w-xs`}
+                            >
                               <a
                                 href={tab.url}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="text-blue-500 underline hover:font-bold transition-all"
+                                className="text-blue-500 underline hover:font-bold transition-all block truncate"
+                                title={tab.url}
                               >
                                 {tab.url}
                               </a>
@@ -279,7 +285,7 @@ function HomeComponent() {
           </section>
         </main>
       </form>
-      <div className="fixed bottom-4 right-4 left-4 flex justify-between items-center">
+      <div className="fixed bottom-0 right-0 left-0 bg-background border-t border-border p-4 flex justify-between items-center shadow-lg z-10">
         <div className="flex space-x-2">
           <Button
             variant="default"
@@ -302,7 +308,7 @@ function HomeComponent() {
             <p>{t('export')}</p>
           </Button>
         </div>
-        <div className="flex items-center space-x-2 text-gray-500">
+        <div className="flex items-center space-x-2 text-muted-foreground">
           <Info size={UI.ICON_SIZE} />
           <p className="text-sm">{t('infoOpen')}</p>
         </div>

@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast'
 import { getStorageItem, STORAGE_KEYS, setStorageItem } from '@/libs/storage'
 import { retry } from '@/utils/retry'
 import { sanitizeUrl } from '@/utils/url'
-import { newTabSchema, TabSchema, tabsFileSchema } from './home.schema'
+import { newTabSchema, TabSchema, tabRotateFileSchema, tabsFileSchema } from './home.schema'
 
 export function useHome() {
   const { t } = useTranslation()
@@ -262,15 +262,35 @@ export function useHome() {
           try {
             const content = e.target?.result as string
             const parsed = JSON.parse(content)
-            const result = tabsFileSchema.safeParse(parsed)
 
-            if (!result.success) {
-              showImportError()
-              return
+            // Try to detect format and convert
+            let convertedTabs: Array<{ name: string; url: string; interval: number }> = []
+
+            // First, try the standard format
+            const standardResult = tabsFileSchema.safeParse(parsed)
+            if (standardResult.success) {
+              convertedTabs = standardResult.data.map((tab) => ({
+                name: tab.name,
+                url: tab.url,
+                interval: tab.interval,
+              }))
+            } else {
+              // Try the tab-rotate format (legacy)
+              const tabRotateResult = tabRotateFileSchema.safeParse(parsed)
+              if (tabRotateResult.success) {
+                convertedTabs = tabRotateResult.data.map((tab) => ({
+                  name: tab.nome,
+                  url: tab.url,
+                  interval: tab.duracao, // Already converted to milliseconds in schema
+                }))
+              } else {
+                showImportError()
+                return
+              }
             }
 
             // Sanitize URLs in imported data
-            const sanitizedTabs = result.data.map((tab) => {
+            const sanitizedTabs = convertedTabs.map((tab) => {
               const sanitizedUrl = sanitizeUrl(tab.url)
               if (!sanitizedUrl) {
                 throw new Error(`Invalid URL in tab: ${tab.name}`)
