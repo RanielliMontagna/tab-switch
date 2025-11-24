@@ -3,7 +3,11 @@
   "description": "Automatically switch between tabs",
   "switchActive": "Active",
   "switchInactive": "Inactive",
+  "switchPaused": "Paused",
+  "pause": "Pause",
+  "resume": "Resume",
   "table": {
+    "title": "Tabs configuration table",
     "name": "Name",
     "namePlaceholder": "Example",
     "url": "URL",
@@ -11,11 +15,36 @@
     "interval": "Interval (ms)",
     "action": "Action",
     "delete": "Delete",
-    "save": "Save"
+    "save": "Save",
+    "saving": "Saving...",
+    "drag": "Drag handle"
+  },
+  "keyboard": {
+    "shortcut": "Shortcut"
+  },
+  "urlPreview": {
+    "preview": "Preview"
+  },
+  "toastPaused": {
+    "title": "Rotation Paused",
+    "description": "Tab rotation has been paused. Click Resume to continue."
+  },
+  "toastResumed": {
+    "title": "Rotation Resumed",
+    "description": "Tab rotation has been resumed."
+  },
+  "toastPauseResumeError": {
+    "title": "Error",
+    "description": "Failed to pause/resume rotation. Please try again."
   },
   "infoOpen": "When activated, other open tabs will be closed automatically.",
   "import": "Import",
   "export": "Export",
+  "dropFileHere": "Drop JSON file here to import",
+  "importPasteHint": "Click to paste JSON (recommended - won't close popup)",
+  "pasteJson": "Paste JSON to Import",
+  "pasteJsonPlaceholder": "Paste your JSON content here...",
+  "cancel": "Cancel",
 
   "toastNotInstalled": {
     "title": "Install the extension!",
@@ -32,5 +61,109 @@
   "toastLeastOneTab": {
     "title": "Please add at least two tabs!",
     "description": "You need to add at least two tabs to start automatic rotation."
+  },
+  "toastImportError": {
+    "title": "Import failed",
+    "description": "The selected file is invalid or corrupted."
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again or reload the page.",
+    "details": "Error details",
+    "retry": "Try again",
+    "reload": "Reload page"
+  },
+  "toastSaveSuccess": {
+    "title": "Tab saved",
+    "description": "The tab has been saved successfully."
+  },
+  "toastSaveError": {
+    "title": "Save failed",
+    "description": "An error occurred while saving the tab. Please try again."
+  },
+  "toastLoadError": {
+    "title": "Load failed",
+    "description": "An error occurred while loading tabs. Please try again."
+  },
+  "toastDeleteError": {
+    "title": "Delete failed",
+    "description": "An error occurred while deleting the tab. Please try again."
+  },
+  "toastReorderError": {
+    "title": "Reorder failed",
+    "description": "An error occurred while reordering tabs. Please try again."
+  },
+  "toastSwitchError": {
+    "title": "Switch failed",
+    "description": "An error occurred while changing the switch state. Please try again."
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "toggle": "Toggle theme",
+    "ariaLabel": "Toggle between light and dark theme"
+  },
+  "language": {
+    "portuguese": "Português",
+    "english": "English",
+    "ariaLabel": "Select language"
+  },
+  "session": {
+    "title": "Sessions",
+    "manage": "Manage Sessions",
+    "create": "Create",
+    "save": "Save",
+    "edit": "Edit {{name}}",
+    "delete": "Delete {{name}}",
+    "current": "Current",
+    "tabs": "tabs",
+    "namePlaceholder": "Session name (e.g., Entertainment, Work)",
+    "created": "Session created",
+    "createdDescription": "Session '{{name}}' has been created",
+    "updated": "Session updated",
+    "deleted": "Session deleted",
+    "error": {
+      "nameRequired": "Session name is required",
+      "createFailed": "Failed to create session",
+      "updateFailed": "Failed to update session",
+      "deleteFailed": "Failed to delete session",
+      "cannotDeleteLast": "Cannot delete the last session"
+    }
+  },
+  "validation": {
+    "common": {
+      "required": "Required",
+      "invalid": "Invalid input",
+      "invalidType": "Expected {{expected}}, received {{received}}",
+      "invalidString": "Invalid string",
+      "invalidEmail": "Invalid email",
+      "invalidUrl": "Invalid URL",
+      "stringTooShort": "String must contain at least {{minimum}} character(s)",
+      "stringTooLong": "String must contain at most {{maximum}} character(s)",
+      "numberTooSmall": "Must be ≥ {{minimum}}",
+      "numberTooBig": "Must be ≤ {{maximum}}",
+      "tooSmall": "Must be ≥ {{minimum}}",
+      "tooBig": "Must be ≤ {{maximum}}",
+      "invalidEnum": "Invalid enum value. Expected {{options}}, received {{received}}"
+    },
+    "name": {
+      "required": "Name is required",
+      "min": "Name is required"
+    },
+    "url": {
+      "required": "URL is required",
+      "min": "URL is required",
+      "invalid": "Invalid URL. Only http:// and https:// protocols are allowed.",
+      "custom": "Invalid URL. Only http:// and https:// protocols are allowed."
+    },
+    "interval": {
+      "required": "Interval is required",
+      "min": "Interval must be at least {{minimum}} ms",
+      "invalid_type": "Interval must be a number"
+    },
+    "nome": {
+      "required": "Name is required",
+      "min": "Name is required"
+    }
   }
 }

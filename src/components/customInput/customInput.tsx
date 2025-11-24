@@ -1,18 +1,16 @@
-import React, { FC } from 'react'
+import React from 'react'
 
-import { Control } from 'react-hook-form'
-
+import { Control, FieldValues, Path } from 'react-hook-form'
+import { masks, sanitizeName, sanitizeUrlInput } from '@/utils'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 import { Input } from '../ui/input'
 
-import { masks } from '@/utils'
-
 type MaskType = 'number' | 'cpf'
 
-interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: Control<any>
-  name: string
+interface CustomInputProps<TFieldValues extends FieldValues = FieldValues>
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'name'> {
+  control: Control<TFieldValues>
+  name: Path<TFieldValues>
   label?: string
   placeholder?: string
   type?: React.InputHTMLAttributes<HTMLInputElement>['type']
@@ -25,7 +23,7 @@ interface CustomInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   onInputChange?: (value: string) => void
 }
 
-export const CustomInput: FC<CustomInputProps> = ({
+export function CustomInput<TFieldValues extends FieldValues = FieldValues>({
   mask,
   name,
   label,
@@ -39,7 +37,7 @@ export const CustomInput: FC<CustomInputProps> = ({
   endAdornment,
   onInputChange,
   ...rest
-}) => {
+}: CustomInputProps<TFieldValues>) {
   const handleFormat = (value: string) => {
     if (mask) {
       return masks[mask].format(value)
@@ -79,8 +77,18 @@ export const CustomInput: FC<CustomInputProps> = ({
               autoComplete="off"
               value={handleFormat(value || '')}
               onChange={(e) => {
-                onInputChange?.(e.target.value)
-                return onChange(handleParse(e.target.value))
+                const rawValue = e.target.value
+                onInputChange?.(rawValue)
+
+                // Sanitize based on input type
+                let sanitizedValue = rawValue
+                if (name === 'name' || name === 'nome') {
+                  sanitizedValue = sanitizeName(rawValue)
+                } else if (name === 'url') {
+                  sanitizedValue = sanitizeUrlInput(rawValue)
+                }
+
+                return onChange(handleParse(sanitizedValue))
               }}
               {...rest}
             />

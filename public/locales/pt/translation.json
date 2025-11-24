@@ -3,7 +3,11 @@
   "description": "Alterne automaticamente entre as abas",
   "switchActive": "Ativo",
   "switchInactive": "Inativo",
+  "switchPaused": "Pausado",
+  "pause": "Pausar",
+  "resume": "Retomar",
   "table": {
+    "title": "Tabela de configuração de abas",
     "name": "Nome",
     "namePlaceholder": "Exemplo",
     "url": "URL",
@@ -11,11 +15,36 @@
     "interval": "Intervalo (ms)",
     "action": "Ação",
     "delete": "Deletar",
-    "save": "Salvar"
+    "save": "Salvar",
+    "saving": "Salvando...",
+    "drag": "Alça de arrastar"
+  },
+  "keyboard": {
+    "shortcut": "Atalho"
+  },
+  "urlPreview": {
+    "preview": "Pré-visualização"
+  },
+  "toastPaused": {
+    "title": "Rotação Pausada",
+    "description": "A rotação de abas foi pausada. Clique em Retomar para continuar."
+  },
+  "toastResumed": {
+    "title": "Rotação Retomada",
+    "description": "A rotação de abas foi retomada."
+  },
+  "toastPauseResumeError": {
+    "title": "Erro",
+    "description": "Falha ao pausar/retomar rotação. Tente novamente."
   },
   "infoOpen": "Quando ativado, outras abas abertas serão fechadas automaticamente.",
   "import": "Importar",
   "export": "Exportar",
+  "dropFileHere": "Arraste o arquivo JSON aqui para importar",
+  "importPasteHint": "Clique para colar JSON (recomendado - não fecha o popup)",
+  "pasteJson": "Colar JSON para Importar",
+  "pasteJsonPlaceholder": "Cole o conteúdo JSON aqui...",
+  "cancel": "Cancelar",
 
   "toastNotInstalled": {
     "title": "Instale a extensão!",
@@ -30,7 +59,111 @@
     "description": "abas foram importadas com sucesso."
   },
   "toastLeastOneTab": {
-    "title": "Por favor, adicione pelo menos duas aba!",
-    "description": "Você precisa adicionar pelo menos duas aba para iniciar a rotação automática."
+    "title": "Adicione pelo menos duas abas!",
+    "description": "Você precisa adicionar pelo menos duas abas para iniciar a rotação automática."
+  },
+  "toastImportError": {
+    "title": "Falha ao importar",
+    "description": "O arquivo selecionado é inválido ou está corrompido."
+  },
+  "errorBoundary": {
+    "title": "Algo deu errado",
+    "description": "Ocorreu um erro inesperado. Por favor, tente novamente ou recarregue a página.",
+    "details": "Detalhes do erro",
+    "retry": "Tentar novamente",
+    "reload": "Recarregar página"
+  },
+  "toastSaveSuccess": {
+    "title": "Aba salva",
+    "description": "A aba foi salva com sucesso."
+  },
+  "toastSaveError": {
+    "title": "Falha ao salvar",
+    "description": "Ocorreu um erro ao salvar a aba. Por favor, tente novamente."
+  },
+  "toastLoadError": {
+    "title": "Falha ao carregar",
+    "description": "Ocorreu um erro ao carregar as abas. Por favor, tente novamente."
+  },
+  "toastDeleteError": {
+    "title": "Falha ao deletar",
+    "description": "Ocorreu um erro ao deletar a aba. Por favor, tente novamente."
+  },
+  "toastReorderError": {
+    "title": "Falha ao reordenar",
+    "description": "Ocorreu um erro ao reordenar as abas. Por favor, tente novamente."
+  },
+  "toastSwitchError": {
+    "title": "Falha ao alterar",
+    "description": "Ocorreu um erro ao alterar o estado da chave. Por favor, tente novamente."
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Escuro",
+    "toggle": "Alternar tema",
+    "ariaLabel": "Alternar entre tema claro e escuro"
+  },
+  "language": {
+    "portuguese": "Português",
+    "english": "English",
+    "ariaLabel": "Selecionar idioma"
+  },
+  "session": {
+    "title": "Sessões",
+    "manage": "Gerenciar Sessões",
+    "create": "Criar",
+    "save": "Salvar",
+    "edit": "Editar {{name}}",
+    "delete": "Deletar {{name}}",
+    "current": "Atual",
+    "tabs": "abas",
+    "namePlaceholder": "Nome da sessão (ex: Entretenimento, Trabalho)",
+    "created": "Sessão criada",
+    "createdDescription": "A sessão '{{name}}' foi criada",
+    "updated": "Sessão atualizada",
+    "deleted": "Sessão deletada",
+    "error": {
+      "nameRequired": "O nome da sessão é obrigatório",
+      "createFailed": "Falha ao criar sessão",
+      "updateFailed": "Falha ao atualizar sessão",
+      "deleteFailed": "Falha ao deletar sessão",
+      "cannotDeleteLast": "Não é possível deletar a última sessão"
+    }
+  },
+  "validation": {
+    "common": {
+      "required": "Obrigatório",
+      "invalid": "Entrada inválida",
+      "invalidType": "Esperado {{expected}}, recebido {{received}}",
+      "invalidString": "String inválida",
+      "invalidEmail": "Email inválido",
+      "invalidUrl": "URL inválida",
+      "stringTooShort": "A string deve conter pelo menos {{minimum}} caractere(s)",
+      "stringTooLong": "A string deve conter no máximo {{maximum}} caractere(s)",
+      "numberTooSmall": "Deve ser ≥ {{minimum}}",
+      "numberTooBig": "Deve ser ≤ {{maximum}}",
+      "tooSmall": "Deve ser ≥ {{minimum}}",
+      "tooBig": "Deve ser ≤ {{maximum}}",
+      "invalidEnum": "Valor de enum inválido. Esperado {{options}}, recebido {{received}}"
+    },
+    "name": {
+      "required": "Nome é obrigatório",
+      "min": "Nome é obrigatório"
+    },
+    "url": {
+      "required": "URL é obrigatória",
+      "min": "URL é obrigatória",
+      "invalid": "URL inválida. Apenas protocolos http:// e https:// são permitidos.",
+      "custom": "URL inválida. Apenas protocolos http:// e https:// são permitidos."
+    },
+    "interval": {
+      "required": "Intervalo é obrigatório",
+      "min": "O intervalo deve ser de pelo menos {{minimum}} ms",
+      "invalid_type": "O intervalo deve ser um número"
+    },
+    "nome": {
+      "required": "Nome é obrigatório",
+      "min": "Nome é obrigatório"
+    }
   }
 }
