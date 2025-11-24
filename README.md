@@ -1,5 +1,5 @@
 <div align='center'>
-    <img src='public/logo.png' alt='Tab Switch Logo' width='80'  />
+    <img src='src/assets/logo.svg' alt='Tab Switch Logo' width='80'  />
     <h2 align='center' style={{margin: 0}}>Tab Switch</h2>
     <p align='center'>
         <img src='https://github.com/RanielliMontagna/tab-switch/workflows/CI/badge.svg' alt='CI Status' />
