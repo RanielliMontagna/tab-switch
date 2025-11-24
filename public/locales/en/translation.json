@@ -3,6 +3,9 @@
   "description": "Automatically switch between tabs",
   "switchActive": "Active",
   "switchInactive": "Inactive",
+  "switchPaused": "Paused",
+  "pause": "Pause",
+  "resume": "Resume",
   "table": {
     "title": "Tabs configuration table",
     "name": "Name",
@@ -21,6 +24,18 @@
   },
   "urlPreview": {
     "preview": "Preview"
+  },
+  "toastPaused": {
+    "title": "Rotation Paused",
+    "description": "Tab rotation has been paused. Click Resume to continue."
+  },
+  "toastResumed": {
+    "title": "Rotation Resumed",
+    "description": "Tab rotation has been resumed."
+  },
+  "toastPauseResumeError": {
+    "title": "Error",
+    "description": "Failed to pause/resume rotation. Please try again."
   },
   "infoOpen": "When activated, other open tabs will be closed automatically.",
   "import": "Import",

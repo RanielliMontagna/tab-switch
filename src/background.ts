@@ -1,4 +1,8 @@
-import type { StartRotationMessage } from '@/@types/messages'
+import type {
+  PauseRotationMessage,
+  ResumeRotationMessage,
+  StartRotationMessage,
+} from '@/@types/messages'
 import type { TabSchema } from '@/containers/home/home.schema'
 
 /**
@@ -7,9 +11,24 @@ import type { TabSchema } from '@/containers/home/home.schema'
 let stopRotation = false
 
 /**
+ * Variable used to pause the rotation of the tabs (without losing state)
+ */
+let isPaused = false
+
+/**
+ * Current tabs being rotated (stored to resume after pause)
+ */
+let currentRotationTabs: TabWithInterval[] | null = null
+
+/**
  * Cleanup function for rotation timeout
  */
 let rotationTimeout: ReturnType<typeof setTimeout> | null = null
+
+/**
+ * Current tab index in rotation (maintained across pause/resume)
+ */
+let currentTabIndex = 0
 
 /**
  * Interface for tab with ID and interval
@@ -32,17 +51,56 @@ interface TabCreationError {
  */
 chrome.runtime.onMessage.addListener(
   async (
-    message: StartRotationMessage | { status: false },
+    message:
+      | StartRotationMessage
+      | { status: false }
+      | PauseRotationMessage
+      | ResumeRotationMessage,
     _sender,
     sendResponse
   ): Promise<boolean> => {
     try {
+      // Handle pause action
+      if ('action' in message && message.action === 'pause') {
+        isPaused = true
+        if (rotationTimeout) {
+          clearTimeout(rotationTimeout)
+          rotationTimeout = null
+        }
+        sendResponse({ status: 'Rotation paused', success: true })
+        return true
+      }
+
+      // Handle resume action
+      if ('action' in message && message.action === 'resume') {
+        if (isPaused && currentRotationTabs) {
+          isPaused = false
+          rotateTabs(currentRotationTabs)
+          sendResponse({ status: 'Rotation resumed', success: true })
+          return true
+        }
+        sendResponse({
+          status: 'error',
+          message: 'No rotation to resume',
+          success: false,
+        })
+        return true
+      }
+
+      // Handle stop action
       if (!message.status) {
         stopRotation = true
+        isPaused = false
+        currentRotationTabs = null
+        if (rotationTimeout) {
+          clearTimeout(rotationTimeout)
+          rotationTimeout = null
+        }
         sendResponse({ status: 'Rotation stopped', success: true })
         return true
       }
 
+      // Handle start action
       const tabs = await createTabs(message.tabs)
       if (tabs.length === 0) {
         sendResponse({
@@ -53,6 +111,10 @@ chrome.runtime.onMessage.addListener(
         return true
       }
 
+      // Reset pause state and index when starting new rotation
+      isPaused = false
+      currentTabIndex = 0
+      currentRotationTabs = tabs
       rotateTabs(tabs)
       sendResponse({ status: 'Rotation started', success: true })
       return true
@@ -175,11 +237,16 @@ function rotateTabs(tabs: TabWithInterval[]): (() => void) | undefined {
     return
   }
 
-  let currentTab = 0
+  // Reset index if starting new rotation (not resuming)
+  if (!isPaused || !currentRotationTabs) {
+    currentTabIndex = 0
+  }
 
   const rotate = (): void => {
     if (stopRotation) {
       stopRotation = false
+      isPaused = false
+      currentRotationTabs = null
       if (rotationTimeout) {
         clearTimeout(rotationTimeout)
         rotationTimeout = null
@@ -187,17 +254,24 @@ function rotateTabs(tabs: TabWithInterval[]): (() => void) | undefined {
       return
     }
 
-    // Validate current tab index
-    if (currentTab < 0 || currentTab >= tabs.length) {
-      console.error(`Invalid tab index: ${currentTab}. Resetting to 0.`)
-      currentTab = 0
+    // Check if rotation is paused
+    if (isPaused) {
+      // Don't clear timeout, just don't schedule next rotation
+      // This allows us to resume from the same point
+      return
     }
 
-    const tab = tabs[currentTab]
+    // Validate current tab index
+    if (currentTabIndex < 0 || currentTabIndex >= tabs.length) {
+      console.error(`Invalid tab index: ${currentTabIndex}. Resetting to 0.`)
+      currentTabIndex = 0
+    }
+
+    const tab = tabs[currentTabIndex]
     if (!tab || !tab.id) {
-      console.error(`Invalid tab at index ${currentTab}. Skipping.`)
-      currentTab = currentTab === tabs.length - 1 ? 0 : currentTab + 1
-      rotationTimeout = setTimeout(rotate, tabs[currentTab]?.interval || 5000)
+      console.error(`Invalid tab at index ${currentTabIndex}. Skipping.`)
+      currentTabIndex = currentTabIndex === tabs.length - 1 ? 0 : currentTabIndex + 1
+      rotationTimeout = setTimeout(rotate, tabs[currentTabIndex]?.interval || 5000)
       return
     }
 
@@ -213,16 +287,16 @@ function rotateTabs(tabs: TabWithInterval[]): (() => void) | undefined {
       if (chrome.runtime.lastError) {
         console.error(`Failed to activate tab ${tab.id}:`, chrome.runtime.lastError.message)
         // Try to continue with next tab
-        currentTab = currentTab === tabs.length - 1 ? 0 : currentTab + 1
-        rotationTimeout = setTimeout(rotate, tabs[currentTab]?.interval || 5000)
+        currentTabIndex = currentTabIndex === tabs.length - 1 ? 0 : currentTabIndex + 1
+        rotationTimeout = setTimeout(rotate, tabs[currentTabIndex]?.interval || 5000)
         return
       }
 
       // Move to next tab
-      currentTab = currentTab === tabs.length - 1 ? 0 : currentTab + 1
+      currentTabIndex = currentTabIndex === tabs.length - 1 ? 0 : currentTabIndex + 1
 
       // Schedule next rotation
-      const nextInterval = tabs[currentTab]?.interval || 5000
+      const nextInterval = tabs[currentTabIndex]?.interval || 5000
       rotationTimeout = setTimeout(rotate, nextInterval)
     })
   }

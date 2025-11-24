@@ -8,6 +8,8 @@ import {
   GripVertical,
   Info,
   Loader2,
+  Pause,
+  Play,
   RotateCwSquare,
   Save,
   Trash2,
@@ -60,6 +62,7 @@ function HomeComponent() {
     tabs,
     methods,
     activeSwitch,
+    isPaused,
     isLoading,
     isSaving,
     isDeleting,
@@ -69,6 +72,7 @@ function HomeComponent() {
     handleSubmit,
     handleDragEnd,
     handleCheckedChange,
+    handlePauseResume,
   } = useHome()
 
   const { t } = useTranslation()
@@ -110,11 +114,37 @@ function HomeComponent() {
                 aria-describedby="switch-description"
               />
               <Label htmlFor="switch-mode" id="switch-description">
-                {activeSwitch ? t('switchActive') : t('switchInactive')}
+                {activeSwitch
+                  ? isPaused
+                    ? t('switchPaused')
+                    : t('switchActive')
+                  : t('switchInactive')}
                 <span className="ml-2 text-xs text-muted-foreground">
                   ({t('keyboard.shortcut')}: Ctrl+Space)
                 </span>
               </Label>
+              {activeSwitch && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePauseResume}
+                  aria-label={isPaused ? t('resume') : t('pause')}
+                  className="focus:ring-2 focus:ring-offset-2"
+                >
+                  {isPaused ? (
+                    <>
+                      <Play size={UI.ICON_SIZE} className="mr-1" aria-hidden="true" />
+                      {t('resume')}
+                    </>
+                  ) : (
+                    <>
+                      <Pause size={UI.ICON_SIZE} className="mr-1" aria-hidden="true" />
+                      {t('pause')}
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </header>
           <section className="mt-8 flex-1 overflow-y-auto pr-2" aria-label={t('table.title')}>

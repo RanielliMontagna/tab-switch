@@ -3,6 +3,9 @@
   "description": "Alterne automaticamente entre as abas",
   "switchActive": "Ativo",
   "switchInactive": "Inativo",
+  "switchPaused": "Pausado",
+  "pause": "Pausar",
+  "resume": "Retomar",
   "table": {
     "title": "Tabela de configuração de abas",
     "name": "Nome",
@@ -21,6 +24,18 @@
   },
   "urlPreview": {
     "preview": "Pré-visualização"
+  },
+  "toastPaused": {
+    "title": "Rotação Pausada",
+    "description": "A rotação de abas foi pausada. Clique em Retomar para continuar."
+  },
+  "toastResumed": {
+    "title": "Rotação Retomada",
+    "description": "A rotação de abas foi retomada."
+  },
+  "toastPauseResumeError": {
+    "title": "Erro",
+    "description": "Falha ao pausar/retomar rotação. Tente novamente."
   },
   "infoOpen": "Quando ativado, outras abas abertas serão fechadas automaticamente.",
   "import": "Importar",

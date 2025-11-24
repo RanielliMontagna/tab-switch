@@ -3,7 +3,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import type { BackgroundMessage } from '@/@types/messages'
+import type {
+  BackgroundMessage,
+  PauseRotationMessage,
+  ResumeRotationMessage,
+} from '@/@types/messages'
 import { FILE, FORM_DEFAULTS, VALIDATION } from '@/constants'
 import { useToast } from '@/hooks/use-toast'
 import { getStorageItem, STORAGE_KEYS, setStorageItem } from '@/libs/storage'
@@ -17,6 +21,7 @@ export function useHome() {
   const { toast } = useToast()
   const [tabs, setTabs] = useState<TabSchema[]>([])
   const [activeSwitch, setActiveSwitch] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
@@ -73,6 +78,11 @@ export function useHome() {
       const loadedSwitch = await getStorageItem<boolean>(STORAGE_KEYS.SWITCH)
       if (loadedSwitch !== null) {
         setActiveSwitch(loadedSwitch)
+      }
+
+      const loadedPaused = await getStorageItem<boolean>(STORAGE_KEYS.IS_PAUSED)
+      if (loadedPaused !== null) {
+        setIsPaused(loadedPaused)
       }
     } catch (error) {
       console.error('Error loading tabs from storage:', error)
@@ -200,6 +210,12 @@ export function useHome() {
       // Save the switch state to storage
       await setStorageItem(STORAGE_KEYS.SWITCH, checked)
 
+      // If turning off, also clear pause state
+      if (!checked) {
+        await setStorageItem(STORAGE_KEYS.IS_PAUSED, false)
+        setIsPaused(false)
+      }
+
       // Update the switch state
       setActiveSwitch(checked)
     } catch (error) {
@@ -324,10 +340,65 @@ export function useHome() {
     loadTabs()
   }, [loadTabs])
 
+  async function handlePauseResume() {
+    try {
+      if (!activeSwitch) {
+        return
+      }
+
+      const newPausedState = !isPaused
+      const message: PauseRotationMessage | ResumeRotationMessage = newPausedState
+        ? { action: 'pause' }
+        : { action: 'resume' }
+
+      try {
+        await retry(
+          () =>
+            new Promise<void>((resolve, reject) => {
+              chrome.runtime.sendMessage(message, (_response) => {
+                if (chrome.runtime.lastError) {
+                  reject(new Error(chrome.runtime.lastError.message))
+                } else {
+                  resolve()
+                }
+              })
+            }),
+          {
+            maxAttempts: 3,
+            delay: 500,
+          }
+        )
+      } catch (error) {
+        console.error('Failed to send pause/resume message:', error)
+        throw error
+      }
+
+      // Save the pause state to storage
+      await setStorageItem(STORAGE_KEYS.IS_PAUSED, newPausedState)
+
+      // Update the pause state
+      setIsPaused(newPausedState)
+
+      toast({
+        title: newPausedState ? t('toastPaused.title') : t('toastResumed.title'),
+        description: newPausedState ? t('toastPaused.description') : t('toastResumed.description'),
+        variant: 'success',
+      })
+    } catch (error) {
+      console.error('Error pausing/resuming rotation:', error)
+      toast({
+        title: t('toastPauseResumeError.title'),
+        description: t('toastPauseResumeError.description'),
+        variant: 'destructive',
+      })
+    }
+  }
+
   return {
     tabs,
     methods,
     activeSwitch,
+    isPaused,
     isLoading,
     isSaving,
     isDeleting,
@@ -337,5 +408,6 @@ export function useHome() {
     handleSubmit,
     handleDragEnd,
     handleCheckedChange,
+    handlePauseResume,
   }
 }

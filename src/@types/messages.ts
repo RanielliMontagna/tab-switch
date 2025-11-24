@@ -16,9 +16,27 @@ export interface StopRotationMessage {
 }
 
 /**
+ * Message sent from popup to background script to pause rotation
+ */
+export interface PauseRotationMessage {
+  action: 'pause'
+}
+
+/**
+ * Message sent from popup to background script to resume rotation
+ */
+export interface ResumeRotationMessage {
+  action: 'resume'
+}
+
+/**
  * Union type for all messages sent to background script
  */
-export type BackgroundMessage = StartRotationMessage | StopRotationMessage
+export type BackgroundMessage =
+  | StartRotationMessage
+  | StopRotationMessage
+  | PauseRotationMessage
+  | ResumeRotationMessage
 
 /**
  * Response from background script
@@ -33,12 +51,30 @@ export interface BackgroundResponse {
 export function isStartRotationMessage(
   message: BackgroundMessage
 ): message is StartRotationMessage {
-  return message.status === true && 'tabs' in message
+  return 'status' in message && message.status === true && 'tabs' in message
 }
 
 /**
  * Type guard to check if message is StopRotationMessage
  */
 export function isStopRotationMessage(message: BackgroundMessage): message is StopRotationMessage {
-  return message.status === false
+  return 'status' in message && message.status === false
+}
+
+/**
+ * Type guard to check if message is PauseRotationMessage
+ */
+export function isPauseRotationMessage(
+  message: BackgroundMessage
+): message is PauseRotationMessage {
+  return 'action' in message && message.action === 'pause'
+}
+
+/**
+ * Type guard to check if message is ResumeRotationMessage
+ */
+export function isResumeRotationMessage(
+  message: BackgroundMessage
+): message is ResumeRotationMessage {
+  return 'action' in message && message.action === 'resume'
 }
