@@ -36,5 +36,12 @@
   "toastImportError": {
     "title": "Falha ao importar",
     "description": "O arquivo selecionado é inválido ou está corrompido."
+  },
+  "errorBoundary": {
+    "title": "Algo deu errado",
+    "description": "Ocorreu um erro inesperado. Por favor, tente novamente ou recarregue a página.",
+    "details": "Detalhes do erro",
+    "retry": "Tentar novamente",
+    "reload": "Recarregar página"
   }
 }

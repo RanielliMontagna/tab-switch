@@ -36,5 +36,12 @@
   "toastImportError": {
     "title": "Import failed",
     "description": "The selected file is invalid or corrupted."
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again or reload the page.",
+    "details": "Error details",
+    "retry": "Try again",
+    "reload": "Reload page"
   }
 }

@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import { DragEndEvent } from '@dnd-kit/core'
 import { useToast } from '@/hooks/use-toast'
+import { getStorageItem, setStorageItem, STORAGE_KEYS } from '@/libs/storage'
+import type { BackgroundMessage } from '@/@types/messages'
 
 import { newTabSchema, TabSchema, tabsFileSchema } from './home.schema'
 
@@ -13,53 +15,57 @@ export function useHome() {
 
   const { toast } = useToast()
   const [tabs, setTabs] = useState<TabSchema[]>([])
-  const [activeSwitch, setActiveSwitch] = useState(localStorage.getItem('switch') === 'true')
+  const [activeSwitch, setActiveSwitch] = useState(false)
 
   const methods = useForm<TabSchema>({
     resolver: zodResolver(newTabSchema),
     defaultValues: { name: '', url: '', interval: 5000, saved: false },
   })
 
-  function handleSubmit(data: TabSchema) {
+  async function handleSubmit(data: TabSchema) {
     const newTabs = [...tabs, data]
     setTabs(newTabs)
 
-    // Save the form data to local storage
-    localStorage.setItem('tabs', JSON.stringify(newTabs))
+    // Save the form data to storage
+    await setStorageItem(STORAGE_KEYS.TABS, newTabs)
 
     // Clear the form
     methods.reset()
   }
 
-  function loadTabs() {
-    const tabs = localStorage.getItem('tabs')
+  async function loadTabs() {
+    const loadedTabs = await getStorageItem<TabSchema[]>(STORAGE_KEYS.TABS)
+    if (loadedTabs) {
+      setTabs(loadedTabs)
+    }
 
-    if (tabs) {
-      setTabs(JSON.parse(tabs))
+    const loadedSwitch = await getStorageItem<boolean>(STORAGE_KEYS.SWITCH)
+    if (loadedSwitch !== null) {
+      setActiveSwitch(loadedSwitch)
     }
   }
 
-  function handleRemoveTab(index: number) {
+  async function handleRemoveTab(index: number) {
     const newTabs = tabs.filter((_, i) => i !== index)
 
     setTabs(newTabs)
 
-    // Save the form data to local storage
-    localStorage.setItem('tabs', JSON.stringify(newTabs))
+    // Save the form data to storage
+    await setStorageItem(STORAGE_KEYS.TABS, newTabs)
   }
 
-  function handleDragEnd(event: DragEndEvent) {
+  async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
 
     const idDelete = (event.activatorEvent.target as HTMLElement).id
 
     if (idDelete === 'delete') {
-      handleRemoveTab(tabs.findIndex((tab) => tab.name === active.id))
+      await handleRemoveTab(tabs.findIndex((tab) => tab.name === active.id))
       return
     }
 
     if (event.over?.id === 'delete') {
-      handleRemoveTab(tabs.findIndex((tab) => tab.name === active.id))
+      await handleRemoveTab(tabs.findIndex((tab) => tab.name === active.id))
       return
     }
 
@@ -73,12 +79,12 @@ export function useHome() {
 
       setTabs(reorderedTabs)
 
-      // Save the reordered tabs to local storage
-      localStorage.setItem('tabs', JSON.stringify(reorderedTabs))
+      // Save the reordered tabs to storage
+      await setStorageItem(STORAGE_KEYS.TABS, reorderedTabs)
     }
   }
 
-  function handleCheckedChange(checked: boolean) {
+  async function handleCheckedChange(checked: boolean) {
     try {
       //Verify if exist at least two tabs to start the auto refresh
       if (tabs.length <= 1) {
@@ -92,10 +98,13 @@ export function useHome() {
       }
 
       // Send message to background script
-      chrome.runtime.sendMessage({ status: checked, tabs })
+      const message: BackgroundMessage = checked
+        ? { status: true, tabs }
+        : { status: false }
+      chrome.runtime.sendMessage(message)
 
-      // Save the switch state to local storage
-      localStorage.setItem('switch', JSON.stringify(checked))
+      // Save the switch state to storage
+      await setStorageItem(STORAGE_KEYS.SWITCH, checked)
 
       // Update the switch state
       setActiveSwitch(checked)
@@ -158,8 +167,8 @@ export function useHome() {
 
             setTabs(result.data as TabSchema[])
 
-            // Save the form data to local storage
-            localStorage.setItem('tabs', JSON.stringify(result.data))
+            // Save the form data to storage
+            await setStorageItem(STORAGE_KEYS.TABS, result.data)
 
             toast({
               title: t('toastImportSuccess.title'),
