@@ -16,6 +16,10 @@ export default defineConfig({
           src: 'public/manifest.json',
           dest: '.',
         },
+        {
+          src: 'public/favicon/**',
+          dest: 'favicon',
+        },
       ],
     }),
   ],

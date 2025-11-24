@@ -6,6 +6,14 @@
 import type { TabSchema } from '@/containers/home/home.schema'
 import { logger } from './logger'
 import { CURRENT_DATA_VERSION, migrateData, STORAGE_VERSION_KEY, validateTabs } from './migrations'
+import {
+  validateDataVersionStorage,
+  validateLanguageStorage,
+  validatePauseStateStorage,
+  validateSwitchStorage,
+  validateTabsStorage,
+  validateThemeStorage,
+} from './storage-schemas'
 
 const STORAGE_KEYS = {
   TABS: 'tabs',
@@ -22,12 +30,24 @@ const isChromeExtension = typeof chrome !== 'undefined' && !!chrome.runtime?.id 
 /**
  * Get value from storage
  */
+/**
+ * Get value from storage with runtime type validation
+ * @param key - Storage key
+ * @returns Validated value or null if not found/invalid
+ */
 export async function getStorageItem<T>(key: StorageKey | string): Promise<T | null> {
   if (isChromeExtension) {
     try {
       const result = await chrome.storage.local.get(key)
       const value = result[key]
-      return (value as T) ?? null
+
+      // Runtime validation based on key
+      if (value !== undefined && value !== null) {
+        const validated = validateStorageValue(key, value)
+        return (validated as T) ?? null
+      }
+
+      return null
     } catch (error) {
       logger.error(`Error getting ${key} from chrome.storage:`, error)
       return null
@@ -37,11 +57,52 @@ export async function getStorageItem<T>(key: StorageKey | string): Promise<T | n
   // Fallback to localStorage
   try {
     const item = localStorage.getItem(key)
-    return item ? (JSON.parse(item) as T) : null
+    if (!item) {
+      return null
+    }
+
+    const parsed = JSON.parse(item)
+    // Runtime validation based on key
+    const validated = validateStorageValue(key, parsed)
+    return (validated as T) ?? null
   } catch (error) {
     logger.error(`Error getting ${key} from localStorage:`, error)
     return null
   }
+}
+
+/**
+ * Validates storage value based on key using Zod schemas
+ * @param key - Storage key
+ * @param value - Value to validate
+ * @returns Validated value or null if validation fails
+ */
+function validateStorageValue(key: StorageKey | string, value: unknown): unknown {
+  // Validate based on key type
+  if (key === STORAGE_KEYS.TABS) {
+    return validateTabsStorage(value)
+  }
+  if (key === STORAGE_KEYS.SWITCH) {
+    return validateSwitchStorage(value)
+  }
+  if (key === STORAGE_KEYS.IS_PAUSED) {
+    return validatePauseStateStorage(value)
+  }
+  if (key === STORAGE_KEYS.THEME) {
+    return validateThemeStorage(value)
+  }
+  if (key === STORAGE_KEYS.LANGUAGE) {
+    return validateLanguageStorage(value)
+  }
+  if (key === STORAGE_VERSION_KEY) {
+    return validateDataVersionStorage(value)
+  }
+
+  // For unknown keys, return as-is (but log warning in development)
+  if (import.meta.env.DEV) {
+    logger.debug(`No validation schema for storage key: ${key}`)
+  }
+  return value
 }
 
 /**

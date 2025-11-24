@@ -5,9 +5,12 @@
   "description": "Switch between tabs automatically",
   "permissions": ["storage", "tabs"],
   "icons": {
-    "16": "logo.png",
-    "48": "logo.png",
-    "128": "logo.png"
+    "16": "favicon/favicon-96x96.png",
+    "48": "favicon/favicon-96x96.png",
+    "96": "favicon/favicon-96x96.png",
+    "128": "favicon/web-app-manifest-192x192.png",
+    "192": "favicon/web-app-manifest-192x192.png",
+    "512": "favicon/web-app-manifest-512x512.png"
   },
   "action": {
     "default_popup": "index.html"
