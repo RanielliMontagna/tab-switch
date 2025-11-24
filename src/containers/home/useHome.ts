@@ -13,7 +13,14 @@ import { useToast } from '@/hooks/use-toast'
 import { getStorageItem, getTabsWithMigration, STORAGE_KEYS, setStorageItem } from '@/libs/storage'
 import { retry } from '@/utils/retry'
 import { sanitizeUrl } from '@/utils/url'
-import { newTabSchema, TabSchema, tabRotateFileSchema, tabsFileSchema } from './home.schema'
+import {
+  minInterval,
+  NewTabSchema,
+  newTabSchema,
+  TabSchema,
+  tabRotateFileSchema,
+  tabsFileSchema,
+} from './home.schema'
 
 export function useHome() {
   const { t } = useTranslation()
@@ -27,7 +34,7 @@ export function useHome() {
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [isReordering, setIsReordering] = useState(false)
 
-  const methods = useForm<TabSchema>({
+  const methods = useForm<NewTabSchema>({
     resolver: zodResolver(newTabSchema),
     defaultValues: {
       name: FORM_DEFAULTS.NAME,
@@ -38,10 +45,18 @@ export function useHome() {
     mode: 'onChange',
   })
 
-  async function handleSubmit(data: TabSchema) {
+  async function handleSubmit(data: NewTabSchema) {
     setIsSaving(true)
     try {
-      const newTabs = [...tabs, data]
+      // Ensure interval is a number
+      const interval = typeof data.interval === 'string' ? parseFloat(data.interval) : data.interval
+      const validatedInterval =
+        Number.isNaN(interval) || interval < minInterval ? minInterval : Math.round(interval)
+
+      // Generate ID for the new tab
+      const newId = tabs.length > 0 ? Math.max(...tabs.map((t) => t.id)) + 1 : 1
+      const tabWithId: TabSchema = { ...data, id: newId, interval: validatedInterval }
+      const newTabs = [...tabs, tabWithId]
       setTabs(newTabs)
 
       // Save the form data to storage
@@ -289,7 +304,7 @@ export function useHome() {
               convertedTabs = standardResult.data.map((tab) => ({
                 name: tab.name,
                 url: tab.url,
-                interval: tab.interval,
+                interval: Number(tab.interval),
               }))
             } else {
               // Try the tab-rotate format (legacy)

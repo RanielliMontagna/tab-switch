@@ -16,11 +16,11 @@ const urlSchema = z
 export const newTabSchema = z.object({
   name: z.string().min(1, 'Required'),
   url: urlSchema,
-  interval: z.coerce
+  interval: z
     .number()
     .int()
     .positive()
-    .min(minInterval, 'Interval must be at least 5000 ms'),
+    .min(minInterval, `Interval must be at least ${minInterval} ms`),
   saved: z.boolean().optional(),
 })
 
