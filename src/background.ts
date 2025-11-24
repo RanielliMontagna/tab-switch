@@ -4,6 +4,7 @@ import type {
   StartRotationMessage,
 } from '@/@types/messages'
 import type { TabSchema } from '@/containers/home/home.schema'
+import { logger } from '@/libs/logger'
 
 /**
  * Variable used to stop the rotation of the tabs
@@ -47,7 +48,13 @@ interface TabCreationError {
 }
 
 /**
- * Listen for messages from the popup
+ * Message listener for Chrome extension runtime messages
+ * Handles start, stop, pause, and resume rotation commands from the popup
+ *
+ * @param message - The message from the popup (StartRotationMessage, PauseRotationMessage, ResumeRotationMessage, or stop command)
+ * @param _sender - The sender of the message (unused)
+ * @param sendResponse - Callback to send response back to sender
+ * @returns Promise<boolean> - Always returns true to indicate async response
  */
 chrome.runtime.onMessage.addListener(
   async (
@@ -119,7 +126,7 @@ chrome.runtime.onMessage.addListener(
       sendResponse({ status: 'Rotation started', success: true })
       return true
     } catch (error) {
-      console.error('Error in background script:', error)
+      logger.error('Error in background script:', error)
       sendResponse({
         status: 'error',
         message: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -131,9 +138,12 @@ chrome.runtime.onMessage.addListener(
 )
 
 /**
- * Create new tabs based on the tabs array
- * @param tabs - Array of tabs to create
- * @returns Promise with array of created tab IDs and intervals
+ * Creates new browser tabs based on the provided tab configurations
+ * Validates permissions, creates tabs, and removes existing tabs not in the rotation
+ *
+ * @param tabs - Array of tab configurations to create (name, url, interval)
+ * @returns Promise resolving to array of created tab IDs and their intervals
+ * @throws Error if no tabs could be created or if permissions are missing
  */
 async function createTabs(tabs: TabSchema[]): Promise<TabWithInterval[]> {
   const tabIds: TabWithInterval[] = []
@@ -151,7 +161,7 @@ async function createTabs(tabs: TabSchema[]): Promise<TabWithInterval[]> {
         try {
           chrome.tabs.create({ url: tab.url }, (createdTab) => {
             if (chrome.runtime.lastError) {
-              console.error(
+              logger.error(
                 `Failed to create tab for ${tab.name || tab.url}:`,
                 chrome.runtime.lastError.message
               )
@@ -165,6 +175,7 @@ async function createTabs(tabs: TabSchema[]): Promise<TabWithInterval[]> {
 
             if (createdTab?.id) {
               tabIds.push({ id: createdTab.id, interval: tab.interval })
+              logger.debug(`Created tab: ${tab.name || tab.url} (ID: ${createdTab.id})`)
             } else {
               errors.push({
                 tab: tab.name || tab.url,
@@ -174,7 +185,7 @@ async function createTabs(tabs: TabSchema[]): Promise<TabWithInterval[]> {
             resolve()
           })
         } catch (error) {
-          console.error(`Error creating tab for ${tab.name || tab.url}:`, error)
+          logger.error(`Error creating tab for ${tab.name || tab.url}:`, error)
           errors.push({
             tab: tab.name || tab.url,
             error: error instanceof Error ? error.message : 'Unknown error',
@@ -187,7 +198,7 @@ async function createTabs(tabs: TabSchema[]): Promise<TabWithInterval[]> {
 
   // Log errors if any
   if (errors.length > 0) {
-    console.warn('Some tabs failed to create:', errors)
+    logger.warn('Some tabs failed to create:', errors)
   }
 
   // If no tabs were created successfully, throw an error
@@ -201,7 +212,7 @@ async function createTabs(tabs: TabSchema[]): Promise<TabWithInterval[]> {
   try {
     chrome.tabs.query({}, (allTabs) => {
       if (chrome.runtime.lastError) {
-        console.warn('Failed to query tabs:', chrome.runtime.lastError.message)
+        logger.warn('Failed to query tabs:', chrome.runtime.lastError.message)
         return
       }
 
@@ -209,7 +220,7 @@ async function createTabs(tabs: TabSchema[]): Promise<TabWithInterval[]> {
         if (tab.id && !tabIds.find((tabId) => tabId.id === tab.id)) {
           chrome.tabs.remove(tab.id, () => {
             if (chrome.runtime.lastError) {
-              console.warn(
+              logger.warn(
                 `Failed to remove tab ${tab.id}:`,
                 chrome.runtime.lastError.message || 'Unknown error'
               )
@@ -219,7 +230,7 @@ async function createTabs(tabs: TabSchema[]): Promise<TabWithInterval[]> {
       })
     })
   } catch (error) {
-    console.warn('Error removing tabs:', error)
+    logger.warn('Error removing tabs:', error)
     // Don't throw - we can continue even if we can't remove old tabs
   }
 
@@ -227,13 +238,15 @@ async function createTabs(tabs: TabSchema[]): Promise<TabWithInterval[]> {
 }
 
 /**
- * Rotate between tabs based on the time interval
- * @param tabs - Array of tabs with IDs and intervals
- * @returns Cleanup function to stop rotation
+ * Rotates between tabs based on their configured intervals
+ * Maintains state across pause/resume operations
+ *
+ * @param tabs - Array of tabs with IDs and intervals to rotate through
+ * @returns Cleanup function to stop rotation, or undefined if rotation cannot start
  */
 function rotateTabs(tabs: TabWithInterval[]): (() => void) | undefined {
   if (!tabs || tabs.length === 0) {
-    console.error('Cannot rotate: no tabs provided')
+    logger.error('Cannot rotate: no tabs provided')
     return
   }
 
@@ -263,13 +276,13 @@ function rotateTabs(tabs: TabWithInterval[]): (() => void) | undefined {
 
     // Validate current tab index
     if (currentTabIndex < 0 || currentTabIndex >= tabs.length) {
-      console.error(`Invalid tab index: ${currentTabIndex}. Resetting to 0.`)
+      logger.error(`Invalid tab index: ${currentTabIndex}. Resetting to 0.`)
       currentTabIndex = 0
     }
 
     const tab = tabs[currentTabIndex]
     if (!tab || !tab.id) {
-      console.error(`Invalid tab at index ${currentTabIndex}. Skipping.`)
+      logger.error(`Invalid tab at index ${currentTabIndex}. Skipping.`)
       currentTabIndex = currentTabIndex === tabs.length - 1 ? 0 : currentTabIndex + 1
       rotationTimeout = setTimeout(rotate, tabs[currentTabIndex]?.interval || 5000)
       return
@@ -277,7 +290,7 @@ function rotateTabs(tabs: TabWithInterval[]): (() => void) | undefined {
 
     // Check if we have permission to update tabs
     if (!chrome.tabs || typeof chrome.tabs.update !== 'function') {
-      console.error('Missing tabs permission. Stopping rotation.')
+      logger.error('Missing tabs permission. Stopping rotation.')
       stopRotation = true
       return
     }
@@ -285,7 +298,7 @@ function rotateTabs(tabs: TabWithInterval[]): (() => void) | undefined {
     // Update the active tab
     chrome.tabs.update(tab.id, { active: true }, (_updatedTab) => {
       if (chrome.runtime.lastError) {
-        console.error(`Failed to activate tab ${tab.id}:`, chrome.runtime.lastError.message)
+        logger.error(`Failed to activate tab ${tab.id}:`, chrome.runtime.lastError.message)
         // Try to continue with next tab
         currentTabIndex = currentTabIndex === tabs.length - 1 ? 0 : currentTabIndex + 1
         rotationTimeout = setTimeout(rotate, tabs[currentTabIndex]?.interval || 5000)

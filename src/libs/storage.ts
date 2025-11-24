@@ -4,6 +4,7 @@
  */
 
 import type { TabSchema } from '@/containers/home/home.schema'
+import { logger } from './logger'
 import { CURRENT_DATA_VERSION, migrateData, STORAGE_VERSION_KEY, validateTabs } from './migrations'
 
 const STORAGE_KEYS = {
@@ -28,7 +29,7 @@ export async function getStorageItem<T>(key: StorageKey | string): Promise<T | n
       const value = result[key]
       return (value as T) ?? null
     } catch (error) {
-      console.error(`Error getting ${key} from chrome.storage:`, error)
+      logger.error(`Error getting ${key} from chrome.storage:`, error)
       return null
     }
   }
@@ -38,7 +39,7 @@ export async function getStorageItem<T>(key: StorageKey | string): Promise<T | n
     const item = localStorage.getItem(key)
     return item ? (JSON.parse(item) as T) : null
   } catch (error) {
-    console.error(`Error getting ${key} from localStorage:`, error)
+    logger.error(`Error getting ${key} from localStorage:`, error)
     return null
   }
 }
@@ -60,7 +61,7 @@ export async function setStorageItem<T>(key: StorageKey, value: T): Promise<void
       }
       return
     } catch (error) {
-      console.error(`Error setting ${key} in chrome.storage:`, error)
+      logger.error(`Error setting ${key} in chrome.storage:`, error)
       throw error
     }
   }
@@ -73,7 +74,7 @@ export async function setStorageItem<T>(key: StorageKey, value: T): Promise<void
       localStorage.setItem(STORAGE_VERSION_KEY, String(CURRENT_DATA_VERSION))
     }
   } catch (error) {
-    console.error(`Error setting ${key} in localStorage:`, error)
+    logger.error(`Error setting ${key} in localStorage:`, error)
     throw error
   }
 }
@@ -87,7 +88,7 @@ export async function removeStorageItem(key: StorageKey): Promise<void> {
       await chrome.storage.local.remove(key)
       return
     } catch (error) {
-      console.error(`Error removing ${key} from chrome.storage:`, error)
+      logger.error(`Error removing ${key} from chrome.storage:`, error)
       throw error
     }
   }
@@ -96,7 +97,7 @@ export async function removeStorageItem(key: StorageKey): Promise<void> {
   try {
     localStorage.removeItem(key)
   } catch (error) {
-    console.error(`Error removing ${key} from localStorage:`, error)
+    logger.error(`Error removing ${key} from localStorage:`, error)
     throw error
   }
 }
@@ -110,7 +111,7 @@ export async function getAllStorageItems(): Promise<Record<string, unknown>> {
       const result = await chrome.storage.local.get(null)
       return result as Record<string, unknown>
     } catch (error) {
-      console.error('Error getting all items from chrome.storage:', error)
+      logger.error('Error getting all items from chrome.storage:', error)
       return {}
     }
   }
@@ -154,7 +155,7 @@ export async function getTabsWithMigration(): Promise<TabSchema[]> {
   // If migration occurred, save the migrated and validated data
   if (version !== CURRENT_DATA_VERSION && validatedTabs.length > 0) {
     await setStorageItem(STORAGE_KEYS.TABS, validatedTabs)
-    console.log(`Migrated tabs from version ${version ?? 0} to ${CURRENT_DATA_VERSION}`)
+    logger.info(`Migrated tabs from version ${version ?? 0} to ${CURRENT_DATA_VERSION}`)
   }
 
   return validatedTabs

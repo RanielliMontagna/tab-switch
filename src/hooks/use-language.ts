@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { logger } from '@/libs/logger'
 import { getStorageItem, STORAGE_KEYS, setStorageItem } from '@/libs/storage'
 
 export type SupportedLanguage = 'pt' | 'en'
@@ -25,7 +26,7 @@ export function useLanguage() {
           setCurrentLanguage(detected === 'pt' || detected === 'en' ? detected : 'en')
         }
       } catch (error) {
-        console.error('Error loading language from storage:', error)
+        logger.error('Error loading language from storage:', error)
         setCurrentLanguage('en')
       } finally {
         setMounted(true)
@@ -56,7 +57,7 @@ export function useLanguage() {
         await setStorageItem(STORAGE_KEYS.LANGUAGE, language)
         setCurrentLanguage(language)
       } catch (error) {
-        console.error('Error changing language:', error)
+        logger.error('Error changing language:', error)
       }
     },
     [i18n]

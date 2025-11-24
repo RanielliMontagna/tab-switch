@@ -10,6 +10,7 @@ import type {
 } from '@/@types/messages'
 import { FILE, FORM_DEFAULTS, VALIDATION } from '@/constants'
 import { useToast } from '@/hooks/use-toast'
+import { logger } from '@/libs/logger'
 import { getStorageItem, getTabsWithMigration, STORAGE_KEYS, setStorageItem } from '@/libs/storage'
 import { retry } from '@/utils/retry'
 import { sanitizeUrl } from '@/utils/url'
@@ -22,6 +23,26 @@ import {
   tabsFileSchema,
 } from './home.schema'
 
+/**
+ * Main hook for managing the home page state and operations
+ * Handles tabs management, form submission, drag & drop, import/export, and rotation control
+ *
+ * @returns Object containing:
+ *   - tabs: Array of configured tabs
+ *   - methods: React Hook Form methods for form management
+ *   - activeSwitch: Whether rotation is currently active
+ *   - isPaused: Whether rotation is paused
+ *   - isLoading: Loading state for initial data fetch
+ *   - isSaving: Saving state for form submission
+ *   - isDeleting: ID of tab being deleted (or null)
+ *   - isReordering: Whether tabs are being reordered
+ *   - importTabs: Function to import tabs from JSON file
+ *   - exportTabs: Function to export tabs to JSON file
+ *   - handleSubmit: Form submission handler
+ *   - handleDragEnd: Drag & drop end handler
+ *   - handleCheckedChange: Switch toggle handler
+ *   - handlePauseResume: Pause/resume rotation handler
+ */
 export function useHome() {
   const { t } = useTranslation()
 
@@ -45,6 +66,12 @@ export function useHome() {
     mode: 'onChange',
   })
 
+  /**
+   * Handles form submission for adding a new tab
+   * Validates interval, generates ID, saves to storage, and shows toast notification
+   *
+   * @param data - Form data containing name, url, and interval
+   */
   async function handleSubmit(data: NewTabSchema) {
     setIsSaving(true)
     try {
@@ -71,7 +98,7 @@ export function useHome() {
         variant: 'success',
       })
     } catch (error) {
-      console.error('Error saving tab:', error)
+      logger.error('Error saving tab:', error)
       toast({
         title: t('toastSaveError.title'),
         description: t('toastSaveError.description'),
@@ -82,6 +109,10 @@ export function useHome() {
     }
   }
 
+  /**
+   * Loads tabs and switch state from storage
+   * Handles migration and validation automatically
+   */
   const loadTabs = useCallback(async () => {
     setIsLoading(true)
     try {
@@ -101,7 +132,7 @@ export function useHome() {
         setIsPaused(loadedPaused)
       }
     } catch (error) {
-      console.error('Error loading tabs from storage:', error)
+      logger.error('Error loading tabs from storage:', error)
       toast({
         title: t('toastLoadError.title'),
         description: t('toastLoadError.description'),
@@ -112,6 +143,11 @@ export function useHome() {
     }
   }, [t, toast])
 
+  /**
+   * Removes a tab from the list and updates storage
+   *
+   * @param index - Index of the tab to remove
+   */
   async function handleRemoveTab(index: number) {
     const tabToDelete = tabs[index]
     if (!tabToDelete) return
@@ -128,7 +164,7 @@ export function useHome() {
       // Save the form data to storage
       await setStorageItem(STORAGE_KEYS.TABS, newTabs)
     } catch (error) {
-      console.error('Error removing tab:', error)
+      logger.error('Error removing tab:', error)
       toast({
         title: t('toastDeleteError.title'),
         description: t('toastDeleteError.description'),
@@ -139,6 +175,12 @@ export function useHome() {
     }
   }
 
+  /**
+   * Handles drag & drop end event for reordering tabs
+   * Also handles deletion if dragged to delete zone
+   *
+   * @param event - Drag end event from dnd-kit
+   */
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
 
@@ -169,7 +211,7 @@ export function useHome() {
         // Save the reordered tabs to storage
         await setStorageItem(STORAGE_KEYS.TABS, reorderedTabs)
       } catch (error) {
-        console.error('Error reordering tabs:', error)
+        logger.error('Error reordering tabs:', error)
         toast({
           title: t('toastReorderError.title'),
           description: t('toastReorderError.description'),
@@ -182,6 +224,12 @@ export function useHome() {
     }
   }
 
+  /**
+   * Handles switch toggle to start/stop rotation
+   * Validates minimum tabs requirement and sends message to background script
+   *
+   * @param checked - Whether the switch is checked (rotation active)
+   */
   async function handleCheckedChange(checked: boolean) {
     try {
       //Verify if exist at least two tabs to start the auto refresh
@@ -214,12 +262,12 @@ export function useHome() {
             maxAttempts: 3,
             delay: 500,
             onRetry: (attempt) => {
-              console.warn(`Retrying message send (attempt ${attempt}/3)`)
+              logger.warn(`Retrying message send (attempt ${attempt}/3)`)
             },
           }
         )
       } catch (error) {
-        console.error('Failed to send message to background script:', error)
+        logger.error('Failed to send message to background script:', error)
         throw error
       }
 
@@ -235,7 +283,7 @@ export function useHome() {
       // Update the switch state
       setActiveSwitch(checked)
     } catch (error) {
-      console.error('Error changing switch state:', error)
+      logger.error('Error changing switch state:', error)
       // Check if it's a Chrome extension error
       if (error instanceof Error && error.message.includes('Extension context invalidated')) {
         toast({
@@ -253,6 +301,10 @@ export function useHome() {
     }
   }
 
+  /**
+   * Exports tabs configuration to a JSON file
+   * Creates a downloadable blob and triggers download
+   */
   function exportTabs() {
     const data = new Blob([JSON.stringify(tabs)], { type: FILE.MIME_TYPE })
     const url = URL.createObjectURL(data)
@@ -271,6 +323,11 @@ export function useHome() {
     })
   }
 
+  /**
+   * Imports tabs configuration from a JSON file
+   * Supports both standard format and legacy tab-rotate format
+   * Validates and sanitizes URLs before importing
+   */
   function importTabs() {
     const input = document.createElement('input')
 
@@ -356,6 +413,10 @@ export function useHome() {
     loadTabs()
   }, [loadTabs])
 
+  /**
+   * Handles pause/resume rotation action
+   * Sends message to background script and updates local state
+   */
   async function handlePauseResume() {
     try {
       if (!activeSwitch) {
@@ -385,7 +446,7 @@ export function useHome() {
           }
         )
       } catch (error) {
-        console.error('Failed to send pause/resume message:', error)
+        logger.error('Failed to send pause/resume message:', error)
         throw error
       }
 
@@ -401,7 +462,7 @@ export function useHome() {
         variant: 'success',
       })
     } catch (error) {
-      console.error('Error pausing/resuming rotation:', error)
+      logger.error('Error pausing/resuming rotation:', error)
       toast({
         title: t('toastPauseResumeError.title'),
         description: t('toastPauseResumeError.description'),

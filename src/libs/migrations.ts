@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { INTERVAL } from '@/constants'
 import { TabSchema, tabSchema } from '@/containers/home/home.schema'
 import { isValidUrl, normalizeUrl } from '@/utils/url'
+import { logger } from './logger'
 
 // Current data version
 export const CURRENT_DATA_VERSION = 1
@@ -61,7 +62,7 @@ function migrateTabsV0ToV1(legacyTabs: unknown): TabSchema[] {
       if (url && isValidUrl(url)) {
         url = normalizeUrl(url)
       } else {
-        console.warn(`Skipping invalid URL: ${url}`)
+        logger.warn(`Skipping invalid URL: ${url}`)
         continue
       }
 
@@ -87,7 +88,7 @@ function migrateTabsV0ToV1(legacyTabs: unknown): TabSchema[] {
       const validated = tabSchema.parse(migratedTab)
       migrated.push(validated)
     } catch (error) {
-      console.warn('Failed to migrate tab:', item, error)
+      logger.warn('Failed to migrate tab:', item, error)
       // Skip invalid tabs
     }
   }
@@ -121,7 +122,7 @@ export function getMigration(
   //   return migrateV1ToV2
   // }
 
-  console.warn(`No migration path from version ${fromVersion} to ${toVersion}`)
+  logger.warn(`No migration path from version ${fromVersion} to ${toVersion}`)
   return null
 }
 
@@ -136,7 +137,7 @@ export function migrateData(data: unknown, currentVersion: number | null): unkno
   }
 
   if (version > CURRENT_DATA_VERSION) {
-    console.warn(
+    logger.warn(
       `Data version (${version}) is newer than current version (${CURRENT_DATA_VERSION}). This may cause issues.`
     )
     return data
@@ -169,7 +170,7 @@ export function validateTabs(data: unknown): TabSchema[] {
       const validatedTab = tabSchema.parse(item)
       validated.push(validatedTab)
     } catch (error) {
-      console.warn('Invalid tab data, skipping:', item, error)
+      logger.warn('Invalid tab data, skipping:', item, error)
     }
   }
 

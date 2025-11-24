@@ -28,7 +28,7 @@ i18next
     fallbackLng: ['pt', 'en'],
     supportedLngs: ['pt', 'en'],
     load: 'languageOnly',
-    debug: true,
+    debug: import.meta.env.DEV, // Only enable debug in development
   })
   .then(() => {
     // Setup Zod i18n after i18next is initialized
