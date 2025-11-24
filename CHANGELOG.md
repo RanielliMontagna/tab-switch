@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0](https://github.com/RanielliMontagna/tab-switch/compare/tab-switch-v1.1.0...tab-switch-v1.2.0) (2025-11-24)
+
+
+### Features
+
+* enhance build process and notifications ([2e0cc9b](https://github.com/RanielliMontagna/tab-switch/commit/2e0cc9bd3d3435c9938d31cb4fb25ed702f379e9))
+
 ## [1.1.0](https://github.com/RanielliMontagna/tab-switch/compare/tab-switch-v1.0.0...tab-switch-v1.1.0) (2025-11-24)
 
 
