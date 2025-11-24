@@ -1,58 +1,81 @@
+import type { StartRotationMessage } from '@/@types/messages'
+import type { TabSchema } from '@/containers/home/home.schema'
+
 /**
- *  @description This variable is used to stop the rotation of the tabs
- *  @type {boolean}
+ * Variable used to stop the rotation of the tabs
  */
 let stopRotation = false
 
-// Listen for messages from the popup
-chrome.runtime.onMessage.addListener(async (message, _, sendResponse) => {
-  try {
-    if (!message.status) {
-      stopRotation = true
-      sendResponse({ status: 'Rotation stopped', success: true })
-      return true
-    }
+/**
+ * Cleanup function for rotation timeout
+ */
+let rotationTimeout: ReturnType<typeof setTimeout> | null = null
 
-    const tabs = await createTabs(message.tabs)
-    if (tabs.length === 0) {
+/**
+ * Interface for tab with ID and interval
+ */
+interface TabWithInterval {
+  id: number
+  interval: number
+}
+
+/**
+ * Interface for tab creation error
+ */
+interface TabCreationError {
+  tab: string
+  error: string
+}
+
+/**
+ * Listen for messages from the popup
+ */
+chrome.runtime.onMessage.addListener(
+  async (
+    message: StartRotationMessage | { status: false },
+    _sender,
+    sendResponse
+  ): Promise<boolean> => {
+    try {
+      if (!message.status) {
+        stopRotation = true
+        sendResponse({ status: 'Rotation stopped', success: true })
+        return true
+      }
+
+      const tabs = await createTabs(message.tabs)
+      if (tabs.length === 0) {
+        sendResponse({
+          status: 'error',
+          message: 'Failed to create tabs. Please check permissions and URLs.',
+          success: false,
+        })
+        return true
+      }
+
+      rotateTabs(tabs)
+      sendResponse({ status: 'Rotation started', success: true })
+      return true
+    } catch (error) {
+      console.error('Error in background script:', error)
       sendResponse({
         status: 'error',
-        message: 'Failed to create tabs. Please check permissions and URLs.',
+        message: error instanceof Error ? error.message : 'Unknown error occurred',
         success: false,
       })
       return true
     }
-
-    rotateTabs(tabs)
-    sendResponse({ status: 'Rotation started', success: true })
-    return true
-  } catch (error) {
-    console.error('Error in background script:', error)
-    sendResponse({
-      status: 'error',
-      message: error instanceof Error ? error.message : 'Unknown error occurred',
-      success: false,
-    })
-    return true
   }
-})
+)
 
 /**
- * @typedef {Object} RawTab
- * @property {string} name
- * @property {string} url
- * @property {string} interval
+ * Create new tabs based on the tabs array
+ * @param tabs - Array of tabs to create
+ * @returns Promise with array of created tab IDs and intervals
  */
-
-/**
- * @description Create new tabs based on the tabs array
- * @param {Array<RawTab>} tabs
- * @returns {Promise<Array<{id: number, interval: number}>>}
- */
-async function createTabs(tabs) {
-  // Array to store the tab ids with the time interval
-  const tabIds = []
-  const errors = []
+async function createTabs(tabs: TabSchema[]): Promise<TabWithInterval[]> {
+  const tabIds: TabWithInterval[] = []
+  const errors: TabCreationError[] = []
 
   // Check if we have permission to create tabs
   if (!chrome.tabs || typeof chrome.tabs.create !== 'function') {
@@ -62,7 +85,7 @@ async function createTabs(tabs) {
   // Create new tabs and wait for all to be created
   await Promise.all(
     tabs.map((tab) => {
-      return new Promise((resolve) => {
+      return new Promise<void>((resolve) => {
         try {
           chrome.tabs.create({ url: tab.url }, (createdTab) => {
             if (chrome.runtime.lastError) {
@@ -72,7 +95,7 @@ async function createTabs(tabs) {
               )
               errors.push({
                 tab: tab.name || tab.url,
-                error: chrome.runtime.lastError.message,
+                error: chrome.runtime.lastError?.message || 'Unknown error',
               })
               resolve()
               return
@@ -121,10 +144,13 @@ async function createTabs(tabs) {
       }
 
       allTabs.forEach((tab) => {
-        if (!tabIds.find((tabId) => tabId.id === tab.id)) {
+        if (tab.id && !tabIds.find((tabId) => tabId.id === tab.id)) {
           chrome.tabs.remove(tab.id, () => {
             if (chrome.runtime.lastError) {
-              console.warn(`Failed to remove tab ${tab.id}:`, chrome.runtime.lastError.message)
+              console.warn(
+                `Failed to remove tab ${tab.id}:`,
+                chrome.runtime.lastError.message || 'Unknown error'
+              )
             }
           })
         }
@@ -139,25 +165,19 @@ async function createTabs(tabs) {
 }
 
 /**
- * @typedef {Object} Tab
- * @property {number} id
- * @property {string} interval
+ * Rotate between tabs based on the time interval
+ * @param tabs - Array of tabs with IDs and intervals
+ * @returns Cleanup function to stop rotation
  */
-
-/**
- * @description Rotate between tabs based on the time interval
- * @param {Array<Tab>} tabs
- */
-function rotateTabs(tabs) {
+function rotateTabs(tabs: TabWithInterval[]): (() => void) | undefined {
   if (!tabs || tabs.length === 0) {
     console.error('Cannot rotate: no tabs provided')
     return
   }
 
   let currentTab = 0
-  let rotationTimeout = null
 
-  const rotate = () => {
+  const rotate = (): void => {
     if (stopRotation) {
       stopRotation = false
       if (rotationTimeout) {
