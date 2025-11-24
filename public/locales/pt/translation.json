@@ -97,5 +97,46 @@
     "dark": "Escuro",
     "toggle": "Alternar tema",
     "ariaLabel": "Alternar entre tema claro e escuro"
+  },
+  "language": {
+    "portuguese": "Português",
+    "english": "English",
+    "ariaLabel": "Selecionar idioma"
+  },
+  "validation": {
+    "common": {
+      "required": "Obrigatório",
+      "invalid": "Entrada inválida",
+      "invalidType": "Esperado {{expected}}, recebido {{received}}",
+      "invalidString": "String inválida",
+      "invalidEmail": "Email inválido",
+      "invalidUrl": "URL inválida",
+      "stringTooShort": "A string deve conter pelo menos {{minimum}} caractere(s)",
+      "stringTooLong": "A string deve conter no máximo {{maximum}} caractere(s)",
+      "numberTooSmall": "O número deve ser maior ou igual a {{minimum}}",
+      "numberTooBig": "O número deve ser menor ou igual a {{maximum}}",
+      "tooSmall": "O valor deve ser maior ou igual a {{minimum}}",
+      "tooBig": "O valor deve ser menor ou igual a {{maximum}}",
+      "invalidEnum": "Valor de enum inválido. Esperado {{options}}, recebido {{received}}"
+    },
+    "name": {
+      "required": "Nome é obrigatório",
+      "min": "Nome é obrigatório"
+    },
+    "url": {
+      "required": "URL é obrigatória",
+      "min": "URL é obrigatória",
+      "invalid": "URL inválida. Apenas protocolos http:// e https:// são permitidos.",
+      "custom": "URL inválida. Apenas protocolos http:// e https:// são permitidos."
+    },
+    "interval": {
+      "required": "Intervalo é obrigatório",
+      "min": "O intervalo deve ser de pelo menos {{minimum}} ms",
+      "invalid_type": "O intervalo deve ser um número"
+    },
+    "nome": {
+      "required": "Nome é obrigatório",
+      "min": "Nome é obrigatório"
+    }
   }
 }

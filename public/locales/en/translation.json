@@ -97,5 +97,46 @@
     "dark": "Dark",
     "toggle": "Toggle theme",
     "ariaLabel": "Toggle between light and dark theme"
+  },
+  "language": {
+    "portuguese": "Português",
+    "english": "English",
+    "ariaLabel": "Select language"
+  },
+  "validation": {
+    "common": {
+      "required": "Required",
+      "invalid": "Invalid input",
+      "invalidType": "Expected {{expected}}, received {{received}}",
+      "invalidString": "Invalid string",
+      "invalidEmail": "Invalid email",
+      "invalidUrl": "Invalid URL",
+      "stringTooShort": "String must contain at least {{minimum}} character(s)",
+      "stringTooLong": "String must contain at most {{maximum}} character(s)",
+      "numberTooSmall": "Number must be greater than or equal to {{minimum}}",
+      "numberTooBig": "Number must be less than or equal to {{maximum}}",
+      "tooSmall": "Value must be greater than or equal to {{minimum}}",
+      "tooBig": "Value must be less than or equal to {{maximum}}",
+      "invalidEnum": "Invalid enum value. Expected {{options}}, received {{received}}"
+    },
+    "name": {
+      "required": "Name is required",
+      "min": "Name is required"
+    },
+    "url": {
+      "required": "URL is required",
+      "min": "URL is required",
+      "invalid": "Invalid URL. Only http:// and https:// protocols are allowed.",
+      "custom": "Invalid URL. Only http:// and https:// protocols are allowed."
+    },
+    "interval": {
+      "required": "Interval is required",
+      "min": "Interval must be at least {{minimum}} ms",
+      "invalid_type": "Interval must be a number"
+    },
+    "nome": {
+      "required": "Name is required",
+      "min": "Name is required"
+    }
   }
 }

@@ -11,6 +11,7 @@ const STORAGE_KEYS = {
   SWITCH: 'switch',
   IS_PAUSED: 'isPaused',
   THEME: 'theme',
+  LANGUAGE: 'language',
 } as const
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS] | typeof STORAGE_VERSION_KEY

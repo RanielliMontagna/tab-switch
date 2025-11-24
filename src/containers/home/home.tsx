@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   FolderDown,
   FolderUp,
+  Globe,
   GripVertical,
   Info,
   Loader2,
@@ -31,6 +32,7 @@ import {
 } from '@/components/ui/table'
 import { INTERVAL, UI, VALIDATION } from '@/constants'
 import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcut'
+import { useLanguage } from '@/hooks/use-language'
 import { useTheme } from '@/hooks/use-theme'
 import { useUrlValidation } from '@/hooks/use-url-validation'
 import { minInterval } from './home.schema'
@@ -80,6 +82,7 @@ function HomeComponent() {
 
   const { t } = useTranslation()
   const { effectiveTheme, toggleTheme, mounted } = useTheme()
+  const { currentLanguage, toggleLanguage, mounted: languageMounted } = useLanguage()
 
   // Get current URL value from form
   const urlValue = methods.watch('url')
@@ -125,6 +128,22 @@ function HomeComponent() {
                   <Moon size={UI.ICON_SIZE} aria-hidden="true" />
                 )}
               </Button>
+              {languageMounted && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleLanguage}
+                  aria-label={t('language.ariaLabel')}
+                  title={
+                    currentLanguage === 'pt' ? t('language.portuguese') : t('language.english')
+                  }
+                  className="focus:ring-2 focus:ring-offset-2"
+                >
+                  <Globe size={UI.ICON_SIZE} aria-hidden="true" />
+                  <span className="ml-1 text-xs font-medium">{currentLanguage.toUpperCase()}</span>
+                </Button>
+              )}
               <Switch
                 id="switch-mode"
                 checked={activeSwitch}

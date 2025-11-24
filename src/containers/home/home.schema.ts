@@ -5,22 +5,19 @@ import { isValidUrl, normalizeUrl } from '@/utils/url'
 export const minInterval = INTERVAL.MIN
 
 // Custom URL validation with sanitization
+// Messages will be translated via zod-i18n error map
 const urlSchema = z
   .string()
-  .min(1, 'URL is required')
+  .min(1) // Message will be translated via error map
   .refine((url) => isValidUrl(url), {
-    message: 'Invalid URL. Only http:// and https:// protocols are allowed.',
+    message: 'validation.url.invalid', // Translation key
   })
   .transform((url) => normalizeUrl(url))
 
 export const newTabSchema = z.object({
-  name: z.string().min(1, 'Required'),
+  name: z.string().min(1), // Message will be translated via error map
   url: urlSchema,
-  interval: z
-    .number()
-    .int()
-    .positive()
-    .min(minInterval, `Interval must be at least ${minInterval} ms`),
+  interval: z.number().int().positive().min(minInterval), // Message will be translated via error map with minInterval as param
   saved: z.boolean().optional(),
 })
 
@@ -34,7 +31,7 @@ export const tabsFileSchema = z.array(newTabSchema)
 // nome = name, duracao (seconds) = interval (milliseconds)
 export const tabRotateFileSchema = z.array(
   z.object({
-    nome: z.string().min(1, 'Nome is required'),
+    nome: z.string().min(1), // Message will be translated via error map
     url: urlSchema,
     duracao: z.preprocess((val) => {
       // Convert seconds to milliseconds
