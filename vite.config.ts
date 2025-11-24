@@ -25,6 +25,9 @@ export default defineConfig({
   ],
   build: {
     outDir: 'build',
+    // Optimize bundle size
+    minify: 'esbuild',
+    sourcemap: false,
     rollupOptions: {
       input: {
         main: './index.html',
@@ -34,8 +37,31 @@ export default defineConfig({
         entryFileNames: (chunkInfo) => {
           return chunkInfo.name === 'background' ? 'background.js' : 'assets/[name]-[hash].js'
         },
+        // Code splitting: separate vendor chunks
+        manualChunks: (id) => {
+          // Separate node_modules into vendor chunk
+          if (id.includes('node_modules')) {
+            // Separate large libraries into their own chunks
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'vendor-react'
+            }
+            if (id.includes('@dnd-kit')) {
+              return 'vendor-dnd'
+            }
+            if (id.includes('i18next') || id.includes('react-i18next')) {
+              return 'vendor-i18n'
+            }
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons'
+            }
+            // All other node_modules
+            return 'vendor'
+          }
+        },
       },
     },
+    // Optimize chunk size
+    chunkSizeWarningLimit: 1000,
   },
   resolve: {
     alias: {
