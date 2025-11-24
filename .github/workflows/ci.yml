@@ -85,7 +85,6 @@ jobs:
     test:
         name: Test
         runs-on: ubuntu-latest
-        if: false # Disabled until tests are added
         steps:
             - uses: actions/checkout@v4
 
@@ -104,9 +103,13 @@ jobs:
             - name: Run tests
               run: pnpm test
 
-            - name: Upload coverage
+            - name: Generate coverage
+              run: pnpm test:coverage
+
+            - name: Upload coverage to Codecov
               uses: codecov/codecov-action@v4
               if: always()
               with:
                   files: ./coverage/lcov.info
                   fail_ci_if_error: false
+                  token: ${{ secrets.CODECOV_TOKEN }}

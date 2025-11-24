@@ -3,6 +3,7 @@
     <h2 align='center' style={{margin: 0}}>Tab Switch</h2>
     <p align='center'>
         <img src='https://github.com/RanielliMontagna/tab-switch/workflows/CI/badge.svg' alt='CI Status' />
+        <img src='https://codecov.io/gh/RanielliMontagna/tab-switch/branch/main/graph/badge.svg' alt='Coverage' />
     </p>
 </div>
 
