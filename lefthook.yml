@@ -1,0 +1,32 @@
+# Lefthook configuration
+# Runs checks before git commits to ensure code quality
+
+pre-commit:
+  parallel: true
+  commands:
+    # Run Biome check (lint + format) on staged files
+    biome:
+      run: pnpm biome check --write {staged_files}
+      stage_fixed: true
+      glob: "*.{ts,tsx,js,jsx,json}"
+      exclude: "{package-lock.json,yarn.lock,pnpm-lock.yaml,*.min.js}"
+
+    # TypeScript type checking (only on staged TS files)
+    typescript:
+      run: pnpm tsc --noEmit
+      glob: "*.{ts,tsx}"
+      skip:
+        - merge
+        - rebase
+
+pre-push:
+  parallel: true
+  commands:
+    # Full Biome check on all files before push
+    biome-full:
+      run: pnpm biome check .
+
+    # Build check to ensure project compiles
+    build:
+      run: pnpm build
+
