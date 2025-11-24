@@ -156,6 +156,7 @@ function HomeComponent() {
                 id="switch-mode"
                 checked={activeSwitch}
                 onCheckedChange={handleCheckedChange}
+                disabled={isLoading || tabs.length < VALIDATION.MIN_TABS_FOR_ROTATION}
                 aria-label={activeSwitch ? t('switchActive') : t('switchInactive')}
                 aria-describedby="switch-description"
               />

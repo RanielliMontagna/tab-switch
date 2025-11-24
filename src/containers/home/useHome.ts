@@ -123,8 +123,16 @@ export function useHome() {
       }
 
       const loadedSwitch = await getStorageItem<boolean>(STORAGE_KEYS.SWITCH)
-      if (loadedSwitch !== null) {
+      // Only set switch state if a value was actually found (not null)
+      // validateSwitchStorage returns false for invalid data, but we want to distinguish
+      // between "not set" (null) and "explicitly false"
+      if (loadedSwitch !== null && loadedSwitch !== undefined) {
         setActiveSwitch(loadedSwitch)
+        logger.debug(`Loaded switch state from storage: ${loadedSwitch}`)
+      } else {
+        logger.debug('No switch state found in storage, defaulting to false')
+        // Explicitly set to false if not found (default state)
+        setActiveSwitch(false)
       }
 
       const loadedPaused = await getStorageItem<boolean>(STORAGE_KEYS.IS_PAUSED)
@@ -232,32 +240,43 @@ export function useHome() {
    */
   async function handleCheckedChange(checked: boolean) {
     try {
-      //Verify if exist at least two tabs to start the auto refresh
-      if (tabs.length < VALIDATION.MIN_TABS_FOR_ROTATION) {
+      // Only validate minimum tabs when trying to activate (not when deactivating)
+      if (checked && tabs.length < VALIDATION.MIN_TABS_FOR_ROTATION) {
         toast({
           title: t('toastLeastOneTab.title'),
           description: t('toastLeastOneTab.description'),
           variant: 'destructive',
         })
-
+        // Don't update state - keep switch in current state (unchecked)
         return
       }
 
       // Send message to background script with retry
       const message: BackgroundMessage = checked ? { status: true, tabs } : { status: false }
 
+      logger.debug(`Sending message to background: ${checked ? 'start' : 'stop'} rotation`)
+
       try {
-        await retry(
+        const response = await retry(
           () =>
-            new Promise<void>((resolve, reject) => {
-              chrome.runtime.sendMessage(message, (_response) => {
-                if (chrome.runtime.lastError) {
-                  reject(new Error(chrome.runtime.lastError.message))
-                } else {
-                  resolve()
-                }
-              })
-            }),
+            new Promise<{ status: string; success: boolean; message?: string }>(
+              (resolve, reject) => {
+                chrome.runtime.sendMessage(message, (response) => {
+                  if (chrome.runtime.lastError) {
+                    const errorMsg = chrome.runtime.lastError.message
+                    logger.error('Chrome runtime error:', errorMsg)
+                    reject(new Error(errorMsg))
+                  } else if (response && typeof response === 'object' && 'success' in response) {
+                    logger.debug('Background response:', response)
+                    resolve(response as { status: string; success: boolean; message?: string })
+                  } else {
+                    // Fallback for older responses or when response is undefined
+                    logger.debug('No response from background, assuming success')
+                    resolve({ status: 'ok', success: true })
+                  }
+                })
+              }
+            ),
           {
             maxAttempts: 3,
             delay: 500,
@@ -266,13 +285,35 @@ export function useHome() {
             },
           }
         )
+
+        // Check if the operation was successful
+        if (!response.success) {
+          const errorMessage = response.message || 'Failed to start/stop rotation'
+          logger.error('Background script returned error:', errorMessage)
+          toast({
+            title: t('toastSwitchError.title'),
+            description: errorMessage,
+            variant: 'destructive',
+          })
+          // Don't update state if operation failed
+          return
+        }
+
+        logger.debug(`Rotation ${checked ? 'started' : 'stopped'} successfully`)
       } catch (error) {
         logger.error('Failed to send message to background script:', error)
-        throw error
+        toast({
+          title: t('toastSwitchError.title'),
+          description: t('toastSwitchError.description'),
+          variant: 'destructive',
+        })
+        // Don't update state if operation failed
+        return
       }
 
       // Save the switch state to storage
       await setStorageItem(STORAGE_KEYS.SWITCH, checked)
+      logger.debug(`Saved switch state to storage: ${checked}`)
 
       // If turning off, also clear pause state
       if (!checked) {
@@ -280,8 +321,9 @@ export function useHome() {
         setIsPaused(false)
       }
 
-      // Update the switch state
+      // Update the switch state only after successful operation
       setActiveSwitch(checked)
+      logger.debug(`Updated activeSwitch state to: ${checked}`)
     } catch (error) {
       logger.error('Error changing switch state:', error)
       // Check if it's a Chrome extension error
