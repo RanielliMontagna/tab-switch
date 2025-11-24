@@ -15,6 +15,7 @@ import type { TabSchema } from '@/containers/home/home.schema'
 import { useToast } from '@/hooks/use-toast'
 import { logger } from '@/libs/logger'
 import { getStorageItem, STORAGE_KEYS, setStorageItem } from '@/libs/storage'
+import { rateLimiters } from '@/utils'
 import { retry } from '@/utils/retry'
 
 /**
@@ -68,6 +69,16 @@ export function useRotationControl(tabs: TabSchema[]) {
           toast({
             title: t('toastLeastOneTab.title'),
             description: t('toastLeastOneTab.description'),
+            variant: 'destructive',
+          })
+          return
+        }
+
+        // Check rate limiting for rotation operations
+        if (!rateLimiters.rotation.isAllowed()) {
+          toast({
+            title: t('toastSwitchError.title'),
+            description: 'Rate limit exceeded. Please wait before toggling rotation again.',
             variant: 'destructive',
           })
           return

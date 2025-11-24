@@ -69,6 +69,30 @@ Agora a extensão está instalada e pronta para uso no Chrome.
 - `pnpm test` - Executa testes unitários
 - `pnpm test:coverage` - Executa testes com relatório de cobertura
 - `pnpm validate:translations` - Valida se todas as traduções estão completas
+- `pnpm validate:manifest` - Valida o manifest.json antes do build
+
+## 🛡️ Segurança e Rate Limiting
+
+O projeto inclui várias medidas de segurança:
+
+- **Validação de URLs**: URLs são verificadas antes da criação de tabs para detectar links suspeitos
+- **Rate Limiting**: Operações sensíveis (criação de tabs, importação) têm limites de taxa para prevenir abuso
+- **Verificação de Integridade**: Dados importados são validados com checksums
+- **Sanitização**: Todos os inputs do usuário são sanitizados
+
+## 🔍 Modo de Desenvolvimento
+
+Para habilitar logs detalhados em produção, defina a variável de ambiente:
+
+```bash
+VITE_DEBUG=true pnpm build
+```
+
+Ou adicione ao arquivo `.env`:
+
+```
+VITE_DEBUG=true
+```
 
 ## 📁 Estrutura do Projeto
 

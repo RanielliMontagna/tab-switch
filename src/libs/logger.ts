@@ -18,11 +18,18 @@ interface LoggerConfig {
 const isDevelopment = import.meta.env.DEV
 
 /**
+ * Check for development mode via environment variable
+ * Can be enabled in production by setting VITE_DEBUG=true
+ */
+const isDebugMode =
+  isDevelopment || import.meta.env.VITE_DEBUG === 'true' || import.meta.env.VITE_DEBUG === '1'
+
+/**
  * Default logger configuration
  */
 const defaultConfig: LoggerConfig = {
-  level: isDevelopment ? 'debug' : 'warn',
-  enableInProduction: false,
+  level: isDebugMode ? 'debug' : 'warn',
+  enableInProduction: isDebugMode,
 }
 
 class Logger {

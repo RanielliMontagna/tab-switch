@@ -1,5 +1,19 @@
 # API Documentation
 
+## Table of Contents
+
+1. [Message Contracts](#message-contracts)
+2. [Storage API](#storage-api)
+3. [Chrome API Utilities](#chrome-api-utilities)
+4. [Validation Schemas](#validation-schemas)
+5. [Error Handling](#error-handling)
+6. [Migration System](#migration-system)
+7. [Logging System](#logging-system)
+8. [Health Checks](#health-checks)
+9. [Rate Limiting](#rate-limiting)
+10. [URL Security](#url-security)
+11. [Data Integrity](#data-integrity)
+
 Documentação das APIs internas e contratos de mensagens do Tab Switch.
 
 ## Índice
@@ -296,8 +310,8 @@ Versão atual dos dados: `1`
 
 O sistema de logging usa níveis configuráveis:
 
-- `debug` - Apenas em desenvolvimento
-- `info` - Apenas em desenvolvimento
+- `debug` - Apenas em desenvolvimento (ou com `VITE_DEBUG=true`)
+- `info` - Apenas em desenvolvimento (ou com `VITE_DEBUG=true`)
 - `warn` - Sempre logado
 - `error` - Sempre logado
 
@@ -308,5 +322,170 @@ logger.debug('Debug message')
 logger.info('Info message')
 logger.warn('Warning message')
 logger.error('Error message')
+```
+
+### Modo de Desenvolvimento
+
+Para habilitar logs detalhados em produção, defina a variável de ambiente:
+
+```bash
+VITE_DEBUG=true pnpm build
+```
+
+## Health Checks
+
+O sistema inclui verificações de saúde para diagnosticar problemas da extensão.
+
+### `performHealthCheck()`
+
+Realiza uma verificação completa do estado da extensão.
+
+**Retorna:** `Promise<HealthCheckResult>`
+
+**HealthCheckResult:**
+```typescript
+interface HealthCheckResult {
+  status: 'healthy' | 'degraded' | 'unhealthy'
+  checks: HealthCheck[]
+  timestamp: number
+}
+```
+
+**Verificações realizadas:**
+- Disponibilidade da Chrome API
+- Permissão de storage
+- Permissão de tabs
+- Acessibilidade do storage
+- Estado da rotação
+
+**Uso:**
+```typescript
+import { performHealthCheck } from '@/libs/health-check'
+
+const result = await performHealthCheck()
+console.log(result.status) // 'healthy' | 'degraded' | 'unhealthy'
+```
+
+### Hook `useHealthCheck()`
+
+Hook React para verificações de saúde em componentes.
+
+**Retorna:**
+```typescript
+{
+  lastCheck: HealthCheckResult | null
+  isChecking: boolean
+  checkHealth: () => Promise<HealthCheckResult>
+}
+```
+
+## Rate Limiting
+
+Sistema de rate limiting para prevenir abuso de operações sensíveis.
+
+### Rate Limiters Pré-configurados
+
+```typescript
+import { rateLimiters } from '@/utils'
+
+// Criação de tabs: máximo 10 tabs por minuto
+rateLimiters.tabCreation.isAllowed()
+
+// Importação: máximo 5 imports por minuto
+rateLimiters.import.isAllowed()
+
+// Rotação: máximo 20 operações por minuto
+rateLimiters.rotation.isAllowed()
+```
+
+### Rate Limiter Customizado
+
+```typescript
+import { createRateLimiter } from '@/utils/rate-limiter'
+
+const limiter = createRateLimiter({
+  maxOperations: 10,
+  windowMs: 60 * 1000, // 1 minuto
+  key: 'custom-operation',
+})
+
+if (limiter.isAllowed()) {
+  // Realizar operação
+}
+```
+
+## URL Security
+
+Validação de segurança de URLs para detectar URLs potencialmente maliciosas.
+
+### `checkUrlSecurity(url: string)`
+
+Verifica se uma URL é potencialmente maliciosa.
+
+**Retorna:** `UrlSecurityResult`
+
+**UrlSecurityResult:**
+```typescript
+interface UrlSecurityResult {
+  isSafe: boolean
+  riskLevel: 'low' | 'medium' | 'high'
+  warnings: string[]
+  details?: {
+    isShortened?: boolean
+    isIpAddress?: boolean
+    hasSuspiciousParams?: boolean
+    domain?: string
+  }
+}
+```
+
+**Uso:**
+```typescript
+import { checkUrlSecurity, validateUrlForTabCreation } from '@/utils/url-security'
+
+const result = checkUrlSecurity('https://example.com')
+if (result.riskLevel === 'high') {
+  // Bloquear URL
+}
+
+// Validar antes de criar tab
+if (validateUrlForTabCreation(url)) {
+  // Criar tab
+}
+```
+
+## Data Integrity
+
+Verificação de integridade de dados usando checksums.
+
+### `generateChecksum(data: unknown)`
+
+Gera um checksum para dados.
+
+**Uso:**
+```typescript
+import { generateChecksum, verifyChecksum } from '@/utils/integrity'
+
+const checksum = generateChecksum(data)
+const isValid = verifyChecksum(data, checksum)
+```
+
+### `wrapWithIntegrity()` / `unwrapWithIntegrity()`
+
+Envolve dados com informações de integridade para export/import.
+
+**Uso:**
+```typescript
+import { wrapWithIntegrity, unwrapWithIntegrity, validateImportedData } from '@/utils/integrity'
+
+// Exportar com integridade
+const wrapped = wrapWithIntegrity(tabs, 1)
+exportToFile(wrapped)
+
+// Importar e validar
+const result = validateImportedData(importedData)
+if (result.isValid) {
+  // Usar result.data
+}
 ```
 

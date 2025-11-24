@@ -10,6 +10,8 @@ import type { TabSchema } from '@/containers/home/home.schema'
 import { useToast } from '@/hooks/use-toast'
 import { logger } from '@/libs/logger'
 import { STORAGE_KEYS, setStorageItem } from '@/libs/storage'
+import { validateImportedData } from '@/utils/integrity'
+import { rateLimiters } from '@/utils/rate-limiter'
 import { sanitizeUrl } from '@/utils/url'
 import { tabRotateFileSchema, tabsFileSchema } from '../containers/home/home.schema'
 
@@ -73,6 +75,16 @@ export function useTabImportExport(
       const reader = new FileReader()
       reader.onload = async (e) => {
         try {
+          // Check rate limiting
+          if (!rateLimiters.import.isAllowed()) {
+            toast({
+              title: t('toastImportError.title'),
+              description: 'Rate limit exceeded. Please wait before importing again.',
+              variant: 'destructive',
+            })
+            return
+          }
+
           if (!e.target?.result) {
             toast({
               title: t('toastImportError.title'),
@@ -84,6 +96,13 @@ export function useTabImportExport(
 
           const content = typeof e.target.result === 'string' ? e.target.result : ''
           const parsed = JSON.parse(content)
+
+          // Validate data integrity
+          const integrityCheck = validateImportedData(parsed)
+          if (!integrityCheck.isValid) {
+            logger.warn('Data integrity check failed:', integrityCheck.error)
+            // Continue anyway, but log the warning
+          }
 
           // Validate the imported data and convert to TabSchema format
           let convertedTabs: Array<{ name: string; url: string; interval: number }> = []

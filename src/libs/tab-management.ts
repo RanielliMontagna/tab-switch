@@ -5,6 +5,8 @@
 
 import type { TabSchema } from '@/containers/home/home.schema'
 import { promisifyChromeApi, safeChromeOperation } from '@/utils/chrome-api'
+import { rateLimiters } from '@/utils/rate-limiter'
+import { validateUrlForTabCreation } from '@/utils/url-security'
 import { logger } from './logger'
 
 /**
@@ -38,6 +40,12 @@ export interface TabCreationResult {
  */
 async function createSingleTab(tab: TabSchema): Promise<TabWithInterval | null> {
   try {
+    // Validate URL security before creating tab
+    if (!validateUrlForTabCreation(tab.url)) {
+      logger.warn(`URL failed security check: ${tab.url}`)
+      return null
+    }
+
     const createdTab = await promisifyChromeApi<chrome.tabs.Tab>((callback) =>
       chrome.tabs.create({ url: tab.url }, callback)
     )
@@ -64,6 +72,17 @@ export async function createTabs(tabConfigs: TabSchema[]): Promise<TabCreationRe
   const result: TabCreationResult = {
     tabs: [],
     errors: [],
+  }
+
+  // Check rate limiting
+  if (!rateLimiters.tabCreation.isAllowed()) {
+    const error: TabCreationError = {
+      tab: 'all',
+      error: 'Rate limit exceeded. Please wait before creating more tabs.',
+    }
+    result.errors.push(error)
+    logger.warn(error.error)
+    return result
   }
 
   // Check if we have permission to create tabs

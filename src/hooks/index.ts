@@ -1,4 +1,5 @@
 export { useDebounce } from './use-debounce'
+export { useHealthCheck } from './use-health-check'
 export { useKeyboardShortcut } from './use-keyboard-shortcut'
 export type { SupportedLanguage } from './use-language'
 export { useLanguage } from './use-language'
