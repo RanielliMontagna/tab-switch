@@ -4,6 +4,7 @@
   "switchActive": "Active",
   "switchInactive": "Inactive",
   "table": {
+    "title": "Tabs configuration table",
     "name": "Name",
     "namePlaceholder": "Example",
     "url": "URL",
@@ -12,7 +13,11 @@
     "action": "Action",
     "delete": "Delete",
     "save": "Save",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "drag": "Drag handle"
+  },
+  "keyboard": {
+    "shortcut": "Shortcut"
   },
   "infoOpen": "When activated, other open tabs will be closed automatically.",
   "import": "Import",

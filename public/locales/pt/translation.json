@@ -4,6 +4,7 @@
   "switchActive": "Ativo",
   "switchInactive": "Inativo",
   "table": {
+    "title": "Tabela de configuração de abas",
     "name": "Nome",
     "namePlaceholder": "Exemplo",
     "url": "URL",
@@ -12,7 +13,11 @@
     "action": "Ação",
     "delete": "Deletar",
     "save": "Salvar",
-    "saving": "Salvando..."
+    "saving": "Salvando...",
+    "drag": "Alça de arrastar"
+  },
+  "keyboard": {
+    "shortcut": "Atalho"
   },
   "infoOpen": "Quando ativado, outras abas abertas serão fechadas automaticamente.",
   "import": "Importar",

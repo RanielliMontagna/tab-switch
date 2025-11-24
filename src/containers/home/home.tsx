@@ -10,7 +10,7 @@ import {
   Save,
   Trash2,
 } from 'lucide-react'
-import { memo } from 'react'
+import { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import Logo from '@/assets/logo.svg'
 import { Button, CustomInput, Form, Label, Skeleton, Switch } from '@/components'
@@ -22,7 +22,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { INTERVAL, UI } from '@/constants'
+import { INTERVAL, UI, VALIDATION } from '@/constants'
+import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcut'
 import { minInterval } from './home.schema'
 import { useHome } from './useHome'
 
@@ -36,7 +37,15 @@ const SortableItem = memo(function SortableItem(props: { id: string; children: R
   }
 
   return (
-    <TableRow ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <TableRow
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      role="row"
+      tabIndex={0}
+      aria-label={`${props.id}, draggable row`}
+    >
       {props.children}
     </TableRow>
   )
@@ -60,6 +69,15 @@ function HomeComponent() {
 
   const { t } = useTranslation()
 
+  // Keyboard shortcut: Ctrl+Space to toggle rotation
+  const handleShortcut = useCallback(() => {
+    if (tabs.length >= VALIDATION.MIN_TABS_FOR_ROTATION) {
+      handleCheckedChange(!activeSwitch)
+    }
+  }, [tabs.length, activeSwitch, handleCheckedChange])
+
+  useKeyboardShortcut('ctrl+space', handleShortcut)
+
   return (
     <Form {...methods}>
       <form onSubmit={methods.handleSubmit(handleSubmit)} className="p-4">
@@ -77,17 +95,22 @@ function HomeComponent() {
                 id="switch-mode"
                 checked={activeSwitch}
                 onCheckedChange={handleCheckedChange}
+                aria-label={activeSwitch ? t('switchActive') : t('switchInactive')}
+                aria-describedby="switch-description"
               />
-              <Label htmlFor="airplane-mode">
+              <Label htmlFor="switch-mode" id="switch-description">
                 {activeSwitch ? t('switchActive') : t('switchInactive')}
+                <span className="ml-2 text-xs text-muted-foreground">
+                  ({t('keyboard.shortcut')}: Ctrl+Space)
+                </span>
               </Label>
             </div>
           </header>
-          <section className="mt-8">
-            <Table className="overflow-hidden">
+          <section className="mt-8" aria-label={t('table.title')}>
+            <Table className="overflow-hidden" role="table" aria-label={t('table.title')}>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-10"></TableHead>
+                  <TableHead className="w-10" aria-label={t('table.drag')}></TableHead>
                   <TableHead className="w-28">{t('table.name')}</TableHead>
                   <TableHead>{t('table.url')}</TableHead>
                   <TableHead className="w-28">{t('table.interval')}</TableHead>
@@ -124,8 +147,15 @@ function HomeComponent() {
                               className={`cursor-move transition-opacity ${
                                 isDeleting === tab.name ? 'opacity-50' : ''
                               } ${isReordering ? 'opacity-70' : ''}`}
+                              aria-label={t('table.drag')}
+                              role="button"
+                              tabIndex={0}
                             >
-                              <GripVertical size={UI.ICON_SIZE} className="ml-1" />
+                              <GripVertical
+                                size={UI.ICON_SIZE}
+                                className="ml-1"
+                                aria-hidden="true"
+                              />
                             </TableCell>
                             <TableCell className={isDeleting === tab.name ? 'opacity-50' : ''}>
                               {tab.name}
@@ -147,14 +177,19 @@ function HomeComponent() {
                               <Button
                                 id="delete"
                                 type="button"
-                                className="w-24"
+                                className="w-24 focus:ring-2 focus:ring-offset-2"
                                 variant="outline"
                                 disabled={isDeleting === tab.name}
+                                aria-label={`${t('table.delete')} ${tab.name}`}
+                                aria-busy={isDeleting === tab.name}
                               >
                                 {isDeleting === tab.name ? (
-                                  <div className="mr-1 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                  <div
+                                    className="mr-1 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                                    aria-hidden="true"
+                                  />
                                 ) : (
-                                  <Trash2 size={UI.ICON_SIZE} className="mr-1" />
+                                  <Trash2 size={UI.ICON_SIZE} className="mr-1" aria-hidden="true" />
                                 )}
                                 {t('table.delete')}
                               </Button>
@@ -215,15 +250,24 @@ function HomeComponent() {
                     />
                   </TableCell>
                   <TableCell className="align-top">
-                    <Button type="submit" className="w-24" disabled={isSaving}>
+                    <Button
+                      type="submit"
+                      className="w-24 focus:ring-2 focus:ring-offset-2"
+                      disabled={isSaving}
+                      aria-label={t('table.save')}
+                      aria-busy={isSaving}
+                    >
                       {isSaving ? (
                         <>
-                          <div className="mr-1 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          <div
+                            className="mr-1 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                            aria-hidden="true"
+                          />
                           {t('table.saving')}
                         </>
                       ) : (
                         <>
-                          <Save size={UI.ICON_SIZE} className="mr-1" />
+                          <Save size={UI.ICON_SIZE} className="mr-1" aria-hidden="true" />
                           {t('table.save')}
                         </>
                       )}
@@ -237,12 +281,24 @@ function HomeComponent() {
       </form>
       <div className="fixed bottom-4 right-4 left-4 flex justify-between items-center">
         <div className="flex space-x-2">
-          <Button variant="default" type="button" onClick={importTabs}>
-            <FolderUp size={UI.ICON_SIZE} className="mr-1" />
+          <Button
+            variant="default"
+            type="button"
+            onClick={importTabs}
+            aria-label={t('import')}
+            className="focus:ring-2 focus:ring-offset-2"
+          >
+            <FolderUp size={UI.ICON_SIZE} className="mr-1" aria-hidden="true" />
             <p>{t('import')}</p>
           </Button>
-          <Button variant="secondary" type="button" onClick={exportTabs}>
-            <FolderDown size={UI.ICON_SIZE} className="mr-1" />
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={exportTabs}
+            aria-label={t('export')}
+            className="focus:ring-2 focus:ring-offset-2"
+          >
+            <FolderDown size={UI.ICON_SIZE} className="mr-1" aria-hidden="true" />
             <p>{t('export')}</p>
           </Button>
         </div>
