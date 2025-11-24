@@ -66,6 +66,9 @@ Agora a extensão está instalada e pronta para uso no Chrome.
 - `pnpm check:fix` - Executa verificação e corrige automaticamente
 - `pnpm lint` - Executa apenas o linter
 - `pnpm format` - Formata o código
+- `pnpm test` - Executa testes unitários
+- `pnpm test:coverage` - Executa testes com relatório de cobertura
+- `pnpm validate:translations` - Valida se todas as traduções estão completas
 
 ## 📁 Estrutura do Projeto
 
