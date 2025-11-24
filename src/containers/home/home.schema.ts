@@ -52,5 +52,26 @@ export const tabRotateFileSchema = z.array(
 // Union schema to support both formats
 export const anyTabsFileSchema = z.union([tabsFileSchema, tabRotateFileSchema])
 
+/**
+ * Schema for a rotation session
+ */
+export const sessionSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  tabs: z.array(tabSchema),
+  createdAt: z.number().int().positive().optional(),
+  updatedAt: z.number().int().positive().optional(),
+})
+
+/**
+ * Schema for sessions storage
+ */
+export const sessionsStorageSchema = z.object({
+  sessions: z.array(sessionSchema),
+  currentSessionId: z.string().min(1).optional(),
+})
+
 export type NewTabSchema = z.infer<typeof newTabSchema>
 export type TabSchema = z.infer<typeof tabSchema>
+export type SessionSchema = z.infer<typeof sessionSchema>
+export type SessionsStorageSchema = z.infer<typeof sessionsStorageSchema>

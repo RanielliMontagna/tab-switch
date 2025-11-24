@@ -14,14 +14,15 @@ import {
   Play,
   RotateCwSquare,
   Save,
+  Settings,
   Sun,
   Trash2,
   XCircle,
 } from 'lucide-react'
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Logo from '@/assets/logo.svg'
-import { Button, CustomInput, Form, Label, Skeleton, Switch } from '@/components'
+import { Button, CustomInput, Form, Label, SessionManager, Skeleton, Switch } from '@/components'
 import {
   Table,
   TableBody,
@@ -79,11 +80,19 @@ function HomeComponent() {
     handleDragEnd,
     handleCheckedChange,
     handlePauseResume,
+    sessions,
+    currentSessionId,
+    currentSession,
+    createSession,
+    switchSession,
+    updateSessionName,
+    deleteSession,
   } = useHome()
 
   const { t } = useTranslation()
   const { effectiveTheme, toggleTheme, mounted } = useTheme()
   const { currentLanguage, toggleLanguage, mounted: languageMounted } = useLanguage()
+  const [showSessionManager, setShowSessionManager] = useState(false)
 
   // Get current URL value from form
   const urlValue = methods.watch('url')
@@ -112,15 +121,62 @@ function HomeComponent() {
         className="flex h-full flex-col gap-6 p-4 pb-32"
       >
         <main className="flex h-full flex-col">
-          <header className="flex w-full justify-between px-4 py-2">
-            <div className="flex items-center space-x-2">
+          <header className="flex w-full justify-between items-center px-4 py-2 border-b">
+            <div className="flex items-center space-x-3">
               <img src={Logo} alt="logo" width={UI.LOGO_SIZE} height={UI.LOGO_SIZE} />
-              <div className="flex flex-col">
-                <h1 className="text-2xl font-bold">{t('title')}</h1>
-                <p>{t('description')}</p>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold">{t('title')}</h1>
+                {currentSession && (
+                  <span className="text-xs text-muted-foreground px-2 py-0.5 rounded bg-muted">
+                    {currentSession.name}
+                  </span>
+                )}
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="switch-mode"
+                checked={activeSwitch}
+                onCheckedChange={handleCheckedChange}
+                disabled={isLoading || tabs.length < VALIDATION.MIN_TABS_FOR_ROTATION}
+                aria-label={activeSwitch ? t('switchActive') : t('switchInactive')}
+              />
+              <Label htmlFor="switch-mode" className="text-sm cursor-pointer">
+                {activeSwitch
+                  ? isPaused
+                    ? t('switchPaused')
+                    : t('switchActive')
+                  : t('switchInactive')}
+              </Label>
+              {activeSwitch && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handlePauseResume}
+                  aria-label={isPaused ? t('resume') : t('pause')}
+                  className="focus:ring-2 focus:ring-offset-2"
+                  title={isPaused ? t('resume') : t('pause')}
+                >
+                  {isPaused ? (
+                    <Play size={UI.ICON_SIZE} aria-hidden="true" />
+                  ) : (
+                    <Pause size={UI.ICON_SIZE} aria-hidden="true" />
+                  )}
+                </Button>
+              )}
+              <div className="h-6 w-px bg-border mx-1" />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSessionManager(!showSessionManager)}
+                aria-label={t('session.manage')}
+                className="focus:ring-2 focus:ring-offset-2"
+                title={t('session.manage')}
+              >
+                <Settings size={UI.ICON_SIZE} aria-hidden="true" />
+              </Button>
               <Button
                 type="button"
                 variant="ghost"
@@ -129,6 +185,7 @@ function HomeComponent() {
                 aria-label={t('theme.ariaLabel')}
                 className="focus:ring-2 focus:ring-offset-2"
                 disabled={!mounted}
+                title={t('theme.ariaLabel')}
               >
                 {mounted && effectiveTheme === 'dark' ? (
                   <Sun size={UI.ICON_SIZE} aria-hidden="true" />
@@ -149,51 +206,22 @@ function HomeComponent() {
                   className="focus:ring-2 focus:ring-offset-2"
                 >
                   <Globe size={UI.ICON_SIZE} aria-hidden="true" />
-                  <span className="ml-1 text-xs font-medium">{currentLanguage.toUpperCase()}</span>
-                </Button>
-              )}
-              <Switch
-                id="switch-mode"
-                checked={activeSwitch}
-                onCheckedChange={handleCheckedChange}
-                disabled={isLoading || tabs.length < VALIDATION.MIN_TABS_FOR_ROTATION}
-                aria-label={activeSwitch ? t('switchActive') : t('switchInactive')}
-                aria-describedby="switch-description"
-              />
-              <Label htmlFor="switch-mode" id="switch-description">
-                {activeSwitch
-                  ? isPaused
-                    ? t('switchPaused')
-                    : t('switchActive')
-                  : t('switchInactive')}
-                <span className="ml-2 text-xs text-muted-foreground">
-                  ({t('keyboard.shortcut')}: Ctrl+Space)
-                </span>
-              </Label>
-              {activeSwitch && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePauseResume}
-                  aria-label={isPaused ? t('resume') : t('pause')}
-                  className="focus:ring-2 focus:ring-offset-2"
-                >
-                  {isPaused ? (
-                    <>
-                      <Play size={UI.ICON_SIZE} className="mr-1" aria-hidden="true" />
-                      {t('resume')}
-                    </>
-                  ) : (
-                    <>
-                      <Pause size={UI.ICON_SIZE} className="mr-1" aria-hidden="true" />
-                      {t('pause')}
-                    </>
-                  )}
                 </Button>
               )}
             </div>
           </header>
+          {showSessionManager && (
+            <div className="mx-4 mb-4 p-4 border rounded-lg bg-background">
+              <SessionManager
+                sessions={sessions}
+                currentSessionId={currentSessionId}
+                onSwitchSession={switchSession}
+                onCreateSession={createSession}
+                onUpdateSessionName={updateSessionName}
+                onDeleteSession={deleteSession}
+              />
+            </div>
+          )}
           <section className="mt-8 flex-1 overflow-y-auto pr-2" aria-label={t('table.title')}>
             <Table
               ref={tableRef}

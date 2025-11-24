@@ -10,6 +10,7 @@ import {
   validateDataVersionStorage,
   validateLanguageStorage,
   validatePauseStateStorage,
+  validateSessionsStorage,
   validateSwitchStorage,
   validateTabsStorage,
   validateThemeStorage,
@@ -21,6 +22,7 @@ const STORAGE_KEYS = {
   IS_PAUSED: 'isPaused',
   THEME: 'theme',
   LANGUAGE: 'language',
+  SESSIONS: 'sessions',
 } as const
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS] | typeof STORAGE_VERSION_KEY
@@ -93,6 +95,9 @@ function validateStorageValue(key: StorageKey | string, value: unknown): unknown
   }
   if (key === STORAGE_KEYS.LANGUAGE) {
     return validateLanguageStorage(value)
+  }
+  if (key === STORAGE_KEYS.SESSIONS) {
+    return validateSessionsStorage(value)
   }
   if (key === STORAGE_VERSION_KEY) {
     return validateDataVersionStorage(value)

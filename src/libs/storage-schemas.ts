@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod'
-import { tabSchema } from '@/containers/home/home.schema'
+import { sessionsStorageSchema, tabSchema } from '@/containers/home/home.schema'
 
 /**
  * Schema for validating tabs array from storage
@@ -113,5 +113,28 @@ export function validateDataVersionStorage(
     return dataVersionStorageSchema.parse(data)
   } catch {
     return 0
+  }
+}
+
+/**
+ * Schema for validating sessions from storage
+ */
+export const sessionsStorageValidationSchema = sessionsStorageSchema
+
+/**
+ * Validates sessions data from storage
+ * @param data - Data to validate
+ * @returns Validated sessions storage or default structure if validation fails
+ */
+export function validateSessionsStorage(
+  data: unknown
+): z.infer<typeof sessionsStorageValidationSchema> {
+  try {
+    return sessionsStorageValidationSchema.parse(data)
+  } catch {
+    return {
+      sessions: [],
+      currentSessionId: undefined,
+    }
   }
 }

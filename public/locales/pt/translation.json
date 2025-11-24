@@ -103,6 +103,28 @@
     "english": "English",
     "ariaLabel": "Selecionar idioma"
   },
+  "session": {
+    "title": "Sessões",
+    "manage": "Gerenciar Sessões",
+    "create": "Criar",
+    "save": "Salvar",
+    "edit": "Editar {{name}}",
+    "delete": "Deletar {{name}}",
+    "current": "Atual",
+    "tabs": "abas",
+    "namePlaceholder": "Nome da sessão (ex: Entretenimento, Trabalho)",
+    "created": "Sessão criada",
+    "createdDescription": "A sessão '{{name}}' foi criada",
+    "updated": "Sessão atualizada",
+    "deleted": "Sessão deletada",
+    "error": {
+      "nameRequired": "O nome da sessão é obrigatório",
+      "createFailed": "Falha ao criar sessão",
+      "updateFailed": "Falha ao atualizar sessão",
+      "deleteFailed": "Falha ao deletar sessão",
+      "cannotDeleteLast": "Não é possível deletar a última sessão"
+    }
+  },
   "validation": {
     "common": {
       "required": "Obrigatório",

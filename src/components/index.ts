@@ -3,6 +3,7 @@
 // Custom
 export { CustomInput } from './customInput/customInput'
 export { Profiler } from './Profiler'
+export { SessionManager } from './SessionManager'
 export * from './ui/button'
 export * from './ui/form'
 export * from './ui/input'

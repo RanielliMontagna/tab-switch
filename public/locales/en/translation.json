@@ -103,6 +103,28 @@
     "english": "English",
     "ariaLabel": "Select language"
   },
+  "session": {
+    "title": "Sessions",
+    "manage": "Manage Sessions",
+    "create": "Create",
+    "save": "Save",
+    "edit": "Edit {{name}}",
+    "delete": "Delete {{name}}",
+    "current": "Current",
+    "tabs": "tabs",
+    "namePlaceholder": "Session name (e.g., Entertainment, Work)",
+    "created": "Session created",
+    "createdDescription": "Session '{{name}}' has been created",
+    "updated": "Session updated",
+    "deleted": "Session deleted",
+    "error": {
+      "nameRequired": "Session name is required",
+      "createFailed": "Failed to create session",
+      "updateFailed": "Failed to update session",
+      "deleteFailed": "Failed to delete session",
+      "cannotDeleteLast": "Cannot delete the last session"
+    }
+  },
   "validation": {
     "common": {
       "required": "Required",

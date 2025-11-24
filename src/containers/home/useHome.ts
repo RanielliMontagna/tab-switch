@@ -1,12 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FORM_DEFAULTS } from '@/constants'
 import { useRotationControl, useTabImportExport, useTabOperations } from '@/hooks'
+import { useSessions } from '@/hooks/use-sessions'
 import { useToast } from '@/hooks/use-toast'
 import { logger } from '@/libs/logger'
-import { getTabsWithMigration, STORAGE_KEYS, setStorageItem } from '@/libs/storage'
 import { minInterval, NewTabSchema, newTabSchema, TabSchema } from './home.schema'
 
 /**
@@ -32,17 +32,50 @@ import { minInterval, NewTabSchema, newTabSchema, TabSchema } from './home.schem
 export function useHome() {
   const { t } = useTranslation()
   const { toast } = useToast()
-  const [tabs, setTabs] = useState<TabSchema[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
-  // Use extracted hooks for better separation of concerns
-  const { isDeleting, isReordering, handleDragEnd } = useTabOperations(tabs, setTabs)
+  // Use sessions hook for managing multiple rotation sessions
+  const {
+    sessions,
+    currentSessionId,
+    currentSession,
+    currentSessionTabs: tabs,
+    isLoading: sessionsLoading,
+    loadSessions,
+    createSession,
+    updateCurrentSessionTabs,
+    switchSession,
+    updateSessionName,
+    deleteSession,
+  } = useSessions()
 
-  const { exportTabs, importTabs } = useTabImportExport(tabs, setTabs)
+  // Local state for tabs (synced with current session)
+  const [localTabs, setLocalTabs] = useState<TabSchema[]>([])
+
+  // Sync local tabs with session tabs
+  useEffect(() => {
+    setLocalTabs(tabs)
+  }, [tabs])
+
+  // Use extracted hooks for better separation of concerns
+  const { isDeleting, isReordering, handleDragEnd } = useTabOperations(localTabs, (newTabs) => {
+    const updatedTabs = typeof newTabs === 'function' ? newTabs(localTabs) : newTabs
+    setLocalTabs(updatedTabs)
+    updateCurrentSessionTabs(updatedTabs).catch((error) => {
+      logger.error('Error updating session tabs:', error)
+    })
+  })
+
+  const { exportTabs, importTabs } = useTabImportExport(localTabs, (newTabs) => {
+    const updatedTabs = typeof newTabs === 'function' ? newTabs(localTabs) : newTabs
+    setLocalTabs(updatedTabs)
+    updateCurrentSessionTabs(updatedTabs).catch((error) => {
+      logger.error('Error updating session tabs:', error)
+    })
+  })
 
   const { activeSwitch, isPaused, loadRotationState, handleCheckedChange, handlePauseResume } =
-    useRotationControl(tabs)
+    useRotationControl(localTabs)
 
   const methods = useForm<NewTabSchema>({
     resolver: zodResolver(newTabSchema),
@@ -70,13 +103,13 @@ export function useHome() {
         Number.isNaN(interval) || interval < minInterval ? minInterval : Math.round(interval)
 
       // Generate ID for the new tab
-      const newId = tabs.length > 0 ? Math.max(...tabs.map((t) => t.id)) + 1 : 1
+      const newId = localTabs.length > 0 ? Math.max(...localTabs.map((t) => t.id)) + 1 : 1
       const tabWithId: TabSchema = { ...data, id: newId, interval: validatedInterval }
-      const newTabs = [...tabs, tabWithId]
-      setTabs(newTabs)
+      const newTabs = [...localTabs, tabWithId]
+      setLocalTabs(newTabs)
 
-      // Save the form data to storage
-      await setStorageItem(STORAGE_KEYS.TABS, newTabs)
+      // Save to current session
+      await updateCurrentSessionTabs(newTabs)
 
       // Clear the form
       methods.reset()
@@ -98,46 +131,48 @@ export function useHome() {
     }
   }
 
-  /**
-   * Loads tabs and switch state from storage
-   * Handles migration and validation automatically
-   */
-  const loadTabs = useCallback(async () => {
-    setIsLoading(true)
-    try {
-      // Load tabs with automatic migration and validation
-      const loadedTabs = await getTabsWithMigration()
-      if (loadedTabs.length > 0) {
-        setTabs(loadedTabs)
-      }
-
-      // Load rotation state (handled by useRotationControl hook)
-      await loadRotationState()
-    } catch (error) {
-      logger.error('Error loading tabs from storage:', error)
-      toast({
-        title: t('toastLoadError.title'),
-        description: t('toastLoadError.description'),
-        variant: 'destructive',
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }, [loadRotationState, t, toast])
-
-  // Load tabs on mount
+  // Load sessions and rotation state on mount (only once)
   useEffect(() => {
-    loadTabs().catch((error) => {
-      logger.error('Failed to load tabs:', error)
+    const loadData = async () => {
+      try {
+        await loadSessions()
+        await loadRotationState()
+      } catch (error) {
+        logger.error('Failed to load data:', error)
+        toast({
+          title: t('toastLoadError.title'),
+          description: t('toastLoadError.description'),
+          variant: 'destructive',
+        })
+      }
+    }
+    loadData().catch((error) => {
+      logger.error('Failed to load data:', error)
     })
-  }, [loadTabs])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadRotationState, loadSessions, t, toast]) // Only run on mount
+
+  // Sync local tabs when session tabs change (prevent infinite loop)
+  useEffect(() => {
+    // Only update if tabs actually changed (compare by reference and length first for performance)
+    if (localTabs.length !== tabs.length || localTabs !== tabs) {
+      // Deep comparison only if lengths differ or reference differs
+      const tabsChanged =
+        localTabs.length !== tabs.length ||
+        localTabs.some((tab, index) => tab.id !== tabs[index]?.id || tab.url !== tabs[index]?.url)
+
+      if (tabsChanged) {
+        setLocalTabs(tabs)
+      }
+    }
+  }, [tabs, localTabs]) // Only depend on tabs, not localTabs
 
   return {
-    tabs,
+    tabs: localTabs,
     methods,
     activeSwitch,
     isPaused,
-    isLoading,
+    isLoading: sessionsLoading,
     isSaving,
     isDeleting,
     isReordering,
@@ -147,5 +182,13 @@ export function useHome() {
     handleDragEnd,
     handleCheckedChange,
     handlePauseResume,
+    // Session management
+    sessions,
+    currentSessionId,
+    currentSession,
+    createSession,
+    switchSession,
+    updateSessionName,
+    deleteSession,
   }
 }
