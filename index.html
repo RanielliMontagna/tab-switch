@@ -13,6 +13,13 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Hidden file input for import - kept in DOM to prevent popup from closing -->
+    <input
+      type="file"
+      id="tab-import-input"
+      accept=".json"
+      style="position: fixed; top: -1000px; left: -1000px; opacity: 0; pointer-events: none;"
+    />
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

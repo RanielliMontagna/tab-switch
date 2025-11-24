@@ -40,6 +40,11 @@
   "infoOpen": "When activated, other open tabs will be closed automatically.",
   "import": "Import",
   "export": "Export",
+  "dropFileHere": "Drop JSON file here to import",
+  "importPasteHint": "Click to paste JSON (recommended - won't close popup)",
+  "pasteJson": "Paste JSON to Import",
+  "pasteJsonPlaceholder": "Paste your JSON content here...",
+  "cancel": "Cancel",
 
   "toastNotInstalled": {
     "title": "Install the extension!",

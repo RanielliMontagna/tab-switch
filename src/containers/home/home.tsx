@@ -75,11 +75,14 @@ function HomeComponent() {
     isDeleting,
     isReordering,
     exportTabs,
-    importTabs,
+    importFromPaste,
     handleSubmit,
     handleDragEnd,
     handleCheckedChange,
     handlePauseResume,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
     sessions,
     currentSessionId,
     currentSession,
@@ -88,6 +91,10 @@ function HomeComponent() {
     updateSessionName,
     deleteSession,
   } = useHome()
+
+  const [isDragging, setIsDragging] = useState(false)
+  const [showPasteModal, setShowPasteModal] = useState(false)
+  const [pasteContent, setPasteContent] = useState('')
 
   const { t } = useTranslation()
   const { effectiveTheme, toggleTheme, mounted } = useTheme()
@@ -119,7 +126,31 @@ function HomeComponent() {
       <form
         onSubmit={methods.handleSubmit(handleSubmit)}
         className="flex h-full flex-col gap-6 p-4 pb-32"
+        onDragOver={(e) => {
+          handleDragOver(e)
+          setIsDragging(true)
+        }}
+        onDragLeave={(e) => {
+          handleDragLeave(e)
+          // Only set dragging to false if we're leaving the form entirely
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+            setIsDragging(false)
+          }
+        }}
+        onDrop={(e) => {
+          handleDrop(e)
+          setIsDragging(false)
+        }}
       >
+        {isDragging && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm border-4 border-dashed border-primary rounded-lg m-4">
+            <div className="text-center">
+              <FolderUp size={48} className="mx-auto mb-4 text-primary" />
+              <p className="text-lg font-semibold">{t('import')}</p>
+              <p className="text-sm text-muted-foreground">{t('dropFileHere')}</p>
+            </div>
+          </div>
+        )}
         <main className="flex h-full flex-col">
           <header className="flex w-full justify-between items-center px-4 py-2 border-b">
             <div className="flex items-center space-x-3">
@@ -443,9 +474,10 @@ function HomeComponent() {
           <Button
             variant="default"
             type="button"
-            onClick={importTabs}
+            onClick={() => setShowPasteModal(true)}
             aria-label={t('import')}
             className="focus:ring-2 focus:ring-offset-2"
+            title={t('importPasteHint')}
           >
             <FolderUp size={UI.ICON_SIZE} className="mr-1" aria-hidden="true" />
             <p>{t('import')}</p>
@@ -466,6 +498,50 @@ function HomeComponent() {
           <p className="text-sm">{t('infoOpen')}</p>
         </div>
       </div>
+      {showPasteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-2xl mx-4 bg-background border rounded-lg shadow-lg p-6">
+            <h2 className="text-xl font-bold mb-4">{t('pasteJson')}</h2>
+            <textarea
+              ref={(textarea) => {
+                if (textarea) {
+                  setTimeout(() => textarea.focus(), 0)
+                }
+              }}
+              value={pasteContent}
+              onChange={(e) => setPasteContent(e.target.value)}
+              placeholder={t('pasteJsonPlaceholder')}
+              className="w-full h-64 p-3 border rounded-md font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <div className="flex justify-end gap-2 mt-4">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => {
+                  setShowPasteModal(false)
+                  setPasteContent('')
+                }}
+              >
+                {t('cancel')}
+              </Button>
+              <Button
+                variant="default"
+                type="button"
+                onClick={async () => {
+                  if (pasteContent.trim()) {
+                    await importFromPaste(pasteContent)
+                    setShowPasteModal(false)
+                    setPasteContent('')
+                  }
+                }}
+                disabled={!pasteContent.trim()}
+              >
+                {t('import')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Form>
   )
 }

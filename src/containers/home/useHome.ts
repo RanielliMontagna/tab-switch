@@ -66,13 +66,14 @@ export function useHome() {
     })
   })
 
-  const { exportTabs, importTabs } = useTabImportExport(localTabs, (newTabs) => {
-    const updatedTabs = typeof newTabs === 'function' ? newTabs(localTabs) : newTabs
-    setLocalTabs(updatedTabs)
-    updateCurrentSessionTabs(updatedTabs).catch((error) => {
-      logger.error('Error updating session tabs:', error)
+  const { exportTabs, importTabs, importFromPaste, handleDragOver, handleDragLeave, handleDrop } =
+    useTabImportExport(localTabs, (newTabs) => {
+      const updatedTabs = typeof newTabs === 'function' ? newTabs(localTabs) : newTabs
+      setLocalTabs(updatedTabs)
+      updateCurrentSessionTabs(updatedTabs).catch((error) => {
+        logger.error('Error updating session tabs:', error)
+      })
     })
-  })
 
   const { activeSwitch, isPaused, loadRotationState, handleCheckedChange, handlePauseResume } =
     useRotationControl(localTabs)
@@ -177,11 +178,15 @@ export function useHome() {
     isDeleting,
     isReordering,
     importTabs,
+    importFromPaste,
     exportTabs,
     handleSubmit,
     handleDragEnd,
     handleCheckedChange,
     handlePauseResume,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
     // Session management
     sessions,
     currentSessionId,

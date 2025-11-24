@@ -40,6 +40,11 @@
   "infoOpen": "Quando ativado, outras abas abertas serão fechadas automaticamente.",
   "import": "Importar",
   "export": "Exportar",
+  "dropFileHere": "Arraste o arquivo JSON aqui para importar",
+  "importPasteHint": "Clique para colar JSON (recomendado - não fecha o popup)",
+  "pasteJson": "Colar JSON para Importar",
+  "pasteJsonPlaceholder": "Cole o conteúdo JSON aqui...",
+  "cancel": "Cancelar",
 
   "toastNotInstalled": {
     "title": "Instale a extensão!",
