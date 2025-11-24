@@ -1,118 +1,135 @@
 name: CI
 
 on:
-    push:
-        branches:
-            - main
-    pull_request:
-        branches:
-            - main
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 permissions:
-    contents: read
+  contents: read
 
 jobs:
-    lint:
-        name: Lint and Format Check
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
+  lint:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-            - uses: pnpm/action-setup@v4
-              with:
-                  version: 9
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: "20"
-                  cache: "pnpm"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-            - name: Run Biome check
-              run: pnpm check
+      - name: Run Biome check
+        run: pnpm check
 
-            - name: Validate translations
-              run: pnpm validate:translations
+      - name: Validate translations
+        run: pnpm validate:translations
 
-    typecheck:
-        name: TypeScript Type Check
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
+      - name: Validate manifest
+        run: pnpm validate:manifest
 
-            - uses: pnpm/action-setup@v4
-              with:
-                  version: 9
+  typecheck:
+    name: TypeScript Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: "20"
-                  cache: "pnpm"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
 
-            - name: Type check
-              run: pnpm tsc --noEmit
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-    build:
-        name: Build
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
+      - name: Type check
+        run: pnpm tsc --noEmit
 
-            - uses: pnpm/action-setup@v4
-              with:
-                  version: 9
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: "20"
-                  cache: "pnpm"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
 
-            - name: Build project
-              run: pnpm build
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-            - name: Upload build artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                  name: build
-                  path: build/
-                  retention-days: 7
+      - name: Validate manifest
+        run: pnpm validate:manifest
 
-    test:
-        name: Test
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
+      - name: Build project
+        run: pnpm build
 
-            - uses: pnpm/action-setup@v4
-              with:
-                  version: 9
+      - name: Analyze bundle size
+        run: |
+          echo "## Bundle Size Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          find build/assets -name "*.js" -exec sh -c 'echo "| {} | $(du -h {} | cut -f1) |"' \; >> $GITHUB_STEP_SUMMARY
+          find build/assets -name "*.css" -exec sh -c 'echo "| {} | $(du -h {} | cut -f1) |"' \; >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Total Build Size" >> $GITHUB_STEP_SUMMARY
+          du -sh build/ >> $GITHUB_STEP_SUMMARY
 
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: "20"
-                  cache: "pnpm"
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: build/
+          retention-days: 7
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-            - name: Run tests
-              run: pnpm test
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
-            - name: Generate coverage
-              run: pnpm test:coverage
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
 
-            - name: Upload coverage to Codecov
-              uses: codecov/codecov-action@v4
-              if: always()
-              with:
-                  files: ./coverage/lcov.info
-                  fail_ci_if_error: false
-                  token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Generate coverage
+        run: pnpm test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}

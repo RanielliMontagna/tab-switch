@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { Control, FieldValues, Path } from 'react-hook-form'
-import { masks } from '@/utils'
+import { masks, sanitizeName, sanitizeUrlInput } from '@/utils'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 import { Input } from '../ui/input'
 
@@ -77,8 +77,18 @@ export function CustomInput<TFieldValues extends FieldValues = FieldValues>({
               autoComplete="off"
               value={handleFormat(value || '')}
               onChange={(e) => {
-                onInputChange?.(e.target.value)
-                return onChange(handleParse(e.target.value))
+                const rawValue = e.target.value
+                onInputChange?.(rawValue)
+
+                // Sanitize based on input type
+                let sanitizedValue = rawValue
+                if (name === 'name' || name === 'nome') {
+                  sanitizedValue = sanitizeName(rawValue)
+                } else if (name === 'url') {
+                  sanitizedValue = sanitizeUrlInput(rawValue)
+                }
+
+                return onChange(handleParse(sanitizedValue))
               }}
               {...rest}
             />

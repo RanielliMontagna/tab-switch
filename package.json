@@ -17,7 +17,9 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "validate:translations": "tsx scripts/validate-translations.ts"
+    "validate:translations": "tsx scripts/validate-translations.ts",
+    "validate:manifest": "tsx scripts/validate-manifest.ts",
+    "prebuild": "pnpm validate:manifest"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

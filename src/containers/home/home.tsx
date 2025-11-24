@@ -33,6 +33,7 @@ import {
 import { INTERVAL, UI, VALIDATION } from '@/constants'
 import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcut'
 import { useLanguage } from '@/hooks/use-language'
+import { useTableKeyboardNavigation } from '@/hooks/use-table-keyboard-navigation'
 import { useTheme } from '@/hooks/use-theme'
 import { useUrlValidation } from '@/hooks/use-url-validation'
 import { minInterval } from './home.schema'
@@ -96,6 +97,13 @@ function HomeComponent() {
   }, [tabs.length, activeSwitch, handleCheckedChange])
 
   useKeyboardShortcut('ctrl+space', handleShortcut)
+
+  // Keyboard navigation for table
+  const { tableRef } = useTableKeyboardNavigation({
+    rowCount: tabs.length,
+    columnCount: 5,
+    enabled: !isLoading && tabs.length > 0,
+  })
 
   return (
     <Form {...methods}>
@@ -186,7 +194,12 @@ function HomeComponent() {
             </div>
           </header>
           <section className="mt-8 flex-1 overflow-y-auto pr-2" aria-label={t('table.title')}>
-            <Table className="w-full overflow-hidden" role="table" aria-label={t('table.title')}>
+            <Table
+              ref={tableRef}
+              className="w-full overflow-hidden"
+              role="table"
+              aria-label={t('table.title')}
+            >
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10" aria-label={t('table.drag')}></TableHead>
