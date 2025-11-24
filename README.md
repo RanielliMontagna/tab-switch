@@ -40,7 +40,7 @@ Tab Switch é uma extensão de navegador que permite a rotação automática ent
     ```
 3. Compile o projeto:
     ```sh
-    yarn build
+    pnpm build
     ```
 4. Adicione a extensão no Chrome:
     1. Abra o Chrome e vá para `chrome://extensions/`.
