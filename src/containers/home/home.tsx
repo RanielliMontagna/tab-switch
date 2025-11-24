@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/table'
 import { minInterval } from './home.schema'
 import { useHome } from './useHome'
+import { INTERVAL, UI } from '@/constants'
 
 const SortableItem = memo(function SortableItem(props: { id: string; children: React.ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.id })
@@ -61,7 +62,7 @@ function HomeComponent() {
         <main>
           <header className="flex justify-between w-full px-4 py-2">
             <div className="flex items-center space-x-2">
-              <img src={Logo} alt="logo" width="60" height="60" />
+              <img src={Logo} alt="logo" width={UI.LOGO_SIZE} height={UI.LOGO_SIZE} />
               <div className="flex flex-col">
                 <h1 className="text-2xl font-bold">{t('title')}</h1>
                 <p>{t('description')}</p>
@@ -95,7 +96,7 @@ function HomeComponent() {
                     {tabs.map((tab) => (
                       <SortableItem key={tab.name} id={tab.name}>
                         <TableCell className="cursor-move">
-                          <GripVertical size={16} className="ml-1" />
+                          <GripVertical size={UI.ICON_SIZE} className="ml-1" />
                         </TableCell>
                         <TableCell>{tab.name}</TableCell>
                         <TableCell>
@@ -111,7 +112,7 @@ function HomeComponent() {
                         <TableCell>{tab.interval} ms</TableCell>
                         <TableCell className="position-relative">
                           <Button id="delete" type="button" className="w-24" variant="outline">
-                            <Trash2 size={16} className="mr-1" />
+                            <Trash2 size={UI.ICON_SIZE} className="mr-1" />
                             {t('table.delete')}
                           </Button>
                         </TableCell>
@@ -123,7 +124,7 @@ function HomeComponent() {
               <TableBody>
                 <TableRow>
                   <TableCell className="align-top">
-                    <RotateCwSquare size={16} className="ml-1 mt-2.5" />
+                    <RotateCwSquare size={UI.ICON_SIZE} className="ml-1 mt-2.5" />
                   </TableCell>
                   <TableCell className="align-top">
                     <CustomInput
@@ -146,8 +147,8 @@ function HomeComponent() {
                       control={methods.control}
                       name="interval"
                       type="number"
-                      placeholder="1000"
-                      step="1000"
+                      placeholder={INTERVAL.DEFAULT_PLACEHOLDER}
+                      step={INTERVAL.STEP}
                       onChange={(e) => {
                         const value = e.target.value
                         const numValue = parseInt(value, 10)
@@ -172,7 +173,7 @@ function HomeComponent() {
                   </TableCell>
                   <TableCell className="align-top">
                     <Button type="submit" className="w-24">
-                      <Save size={16} className="mr-1" />
+                      <Save size={UI.ICON_SIZE} className="mr-1" />
                       {t('table.save')}
                     </Button>
                   </TableCell>
@@ -185,16 +186,16 @@ function HomeComponent() {
       <div className="fixed bottom-4 right-4 left-4 flex justify-between items-center">
         <div className="flex space-x-2">
           <Button variant="default" type="button" onClick={importTabs}>
-            <FolderUp size={16} className="mr-1" />
+            <FolderUp size={UI.ICON_SIZE} className="mr-1" />
             <p>{t('import')}</p>
           </Button>
           <Button variant="secondary" type="button" onClick={exportTabs}>
-            <FolderDown size={16} className="mr-1" />
+            <FolderDown size={UI.ICON_SIZE} className="mr-1" />
             <p>{t('export')}</p>
           </Button>
         </div>
         <div className="flex items-center space-x-2 text-gray-500">
-          <Info size={16} />
+          <Info size={UI.ICON_SIZE} />
           <p className="text-sm">{t('infoOpen')}</p>
         </div>
       </div>

@@ -4,9 +4,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import type { BackgroundMessage } from '@/@types/messages'
+import { FILE, FORM_DEFAULTS, VALIDATION } from '@/constants'
 import { useToast } from '@/hooks/use-toast'
 import { getStorageItem, STORAGE_KEYS, setStorageItem } from '@/libs/storage'
-
 import { newTabSchema, TabSchema, tabsFileSchema } from './home.schema'
 
 export function useHome() {
@@ -18,7 +18,12 @@ export function useHome() {
 
   const methods = useForm<TabSchema>({
     resolver: zodResolver(newTabSchema),
-    defaultValues: { name: '', url: '', interval: 5000, saved: false },
+    defaultValues: {
+      name: FORM_DEFAULTS.NAME,
+      url: FORM_DEFAULTS.URL,
+      interval: FORM_DEFAULTS.INTERVAL,
+      saved: FORM_DEFAULTS.SAVED,
+    },
     mode: 'onChange',
   })
 
@@ -129,7 +134,7 @@ export function useHome() {
   async function handleCheckedChange(checked: boolean) {
     try {
       //Verify if exist at least two tabs to start the auto refresh
-      if (tabs.length <= 1) {
+      if (tabs.length < VALIDATION.MIN_TABS_FOR_ROTATION) {
         toast({
           title: t('toastLeastOneTab.title'),
           description: t('toastLeastOneTab.description'),
@@ -168,12 +173,12 @@ export function useHome() {
   }
 
   function exportTabs() {
-    const data = new Blob([JSON.stringify(tabs)], { type: 'application/json' })
+    const data = new Blob([JSON.stringify(tabs)], { type: FILE.MIME_TYPE })
     const url = URL.createObjectURL(data)
     const a = document.createElement('a')
 
     a.href = url
-    a.download = 'tabs.json'
+    a.download = FILE.EXPORT_NAME
     a.click()
 
     URL.revokeObjectURL(url)
@@ -189,7 +194,7 @@ export function useHome() {
     const input = document.createElement('input')
 
     input.type = 'file'
-    input.accept = '.json'
+    input.accept = FILE.ACCEPT_TYPE
     input.onchange = async (event) => {
       const file = (event.target as HTMLInputElement).files?.[0]
 

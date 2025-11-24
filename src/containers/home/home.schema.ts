@@ -1,6 +1,7 @@
 import { z } from 'zod'
+import { INTERVAL } from '@/constants'
 
-export const minInterval = 5000
+export const minInterval = INTERVAL.MIN
 
 export const newTabSchema = z.object({
   name: z.string().min(1, 'Required'),
