@@ -22,9 +22,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { INTERVAL, UI } from '@/constants'
 import { minInterval } from './home.schema'
 import { useHome } from './useHome'
-import { INTERVAL, UI } from '@/constants'
 
 const SortableItem = memo(function SortableItem(props: { id: string; children: React.ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.id })

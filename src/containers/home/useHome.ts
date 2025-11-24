@@ -7,6 +7,8 @@ import type { BackgroundMessage } from '@/@types/messages'
 import { FILE, FORM_DEFAULTS, VALIDATION } from '@/constants'
 import { useToast } from '@/hooks/use-toast'
 import { getStorageItem, STORAGE_KEYS, setStorageItem } from '@/libs/storage'
+import { retry } from '@/utils/retry'
+import { sanitizeUrl } from '@/utils/url'
 import { newTabSchema, TabSchema, tabsFileSchema } from './home.schema'
 
 export function useHome() {
@@ -144,9 +146,33 @@ export function useHome() {
         return
       }
 
-      // Send message to background script
+      // Send message to background script with retry
       const message: BackgroundMessage = checked ? { status: true, tabs } : { status: false }
-      chrome.runtime.sendMessage(message)
+
+      try {
+        await retry(
+          () =>
+            new Promise<void>((resolve, reject) => {
+              chrome.runtime.sendMessage(message, (_response) => {
+                if (chrome.runtime.lastError) {
+                  reject(new Error(chrome.runtime.lastError.message))
+                } else {
+                  resolve()
+                }
+              })
+            }),
+          {
+            maxAttempts: 3,
+            delay: 500,
+            onRetry: (attempt) => {
+              console.warn(`Retrying message send (attempt ${attempt}/3)`)
+            },
+          }
+        )
+      } catch (error) {
+        console.error('Failed to send message to background script:', error)
+        throw error
+      }
 
       // Save the switch state to storage
       await setStorageItem(STORAGE_KEYS.SWITCH, checked)
@@ -220,14 +246,23 @@ export function useHome() {
               return
             }
 
-            setTabs(result.data as TabSchema[])
+            // Sanitize URLs in imported data
+            const sanitizedTabs = result.data.map((tab) => {
+              const sanitizedUrl = sanitizeUrl(tab.url)
+              if (!sanitizedUrl) {
+                throw new Error(`Invalid URL in tab: ${tab.name}`)
+              }
+              return { ...tab, url: sanitizedUrl }
+            })
+
+            setTabs(sanitizedTabs as TabSchema[])
 
             // Save the form data to storage
-            await setStorageItem(STORAGE_KEYS.TABS, result.data)
+            await setStorageItem(STORAGE_KEYS.TABS, sanitizedTabs)
 
             toast({
               title: t('toastImportSuccess.title'),
-              description: `${result.data.length} ${t('toastImportSuccess.description')}`,
+              description: `${sanitizedTabs.length} ${t('toastImportSuccess.description')}`,
               variant: 'success',
             })
           } catch {

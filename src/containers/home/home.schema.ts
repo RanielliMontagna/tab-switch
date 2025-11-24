@@ -1,11 +1,21 @@
 import { z } from 'zod'
 import { INTERVAL } from '@/constants'
+import { isValidUrl, normalizeUrl } from '@/utils/url'
 
 export const minInterval = INTERVAL.MIN
 
+// Custom URL validation with sanitization
+const urlSchema = z
+  .string()
+  .min(1, 'URL is required')
+  .refine((url) => isValidUrl(url), {
+    message: 'Invalid URL. Only http:// and https:// protocols are allowed.',
+  })
+  .transform((url) => normalizeUrl(url))
+
 export const newTabSchema = z.object({
   name: z.string().min(1, 'Required'),
-  url: z.string().url(),
+  url: urlSchema,
   interval: z.coerce
     .number()
     .int()
