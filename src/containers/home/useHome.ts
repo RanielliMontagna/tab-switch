@@ -10,7 +10,7 @@ import type {
 } from '@/@types/messages'
 import { FILE, FORM_DEFAULTS, VALIDATION } from '@/constants'
 import { useToast } from '@/hooks/use-toast'
-import { getStorageItem, STORAGE_KEYS, setStorageItem } from '@/libs/storage'
+import { getStorageItem, getTabsWithMigration, STORAGE_KEYS, setStorageItem } from '@/libs/storage'
 import { retry } from '@/utils/retry'
 import { sanitizeUrl } from '@/utils/url'
 import { newTabSchema, TabSchema, tabRotateFileSchema, tabsFileSchema } from './home.schema'
@@ -70,8 +70,9 @@ export function useHome() {
   const loadTabs = useCallback(async () => {
     setIsLoading(true)
     try {
-      const loadedTabs = await getStorageItem<TabSchema[]>(STORAGE_KEYS.TABS)
-      if (loadedTabs) {
+      // Load tabs with automatic migration and validation
+      const loadedTabs = await getTabsWithMigration()
+      if (loadedTabs.length > 0) {
         setTabs(loadedTabs)
       }
 
