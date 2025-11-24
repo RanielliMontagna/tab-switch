@@ -126,7 +126,10 @@ export function useTableKeyboardNavigation({
       const rows = table.querySelectorAll('tbody tr')
       if (rows[row]) {
         const cells = rows[row].querySelectorAll('td, th')
-        const cell = cells[col] as HTMLElement
+        const cell = cells[col]
+        if (!(cell instanceof HTMLElement)) {
+          return
+        }
         if (cell) {
           // Find focusable element within cell
           const focusable = cell.querySelector<HTMLElement>(
