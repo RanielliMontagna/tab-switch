@@ -19,6 +19,9 @@
   "keyboard": {
     "shortcut": "Atalho"
   },
+  "urlPreview": {
+    "preview": "Pré-visualização"
+  },
   "infoOpen": "Quando ativado, outras abas abertas serão fechadas automaticamente.",
   "import": "Importar",
   "export": "Exportar",

@@ -2,13 +2,16 @@ import { closestCenter, DndContext } from '@dnd-kit/core'
 import { SortableContext, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import {
+  CheckCircle2,
   FolderDown,
   FolderUp,
   GripVertical,
   Info,
+  Loader2,
   RotateCwSquare,
   Save,
   Trash2,
+  XCircle,
 } from 'lucide-react'
 import { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -24,6 +27,7 @@ import {
 } from '@/components/ui/table'
 import { INTERVAL, UI, VALIDATION } from '@/constants'
 import { useKeyboardShortcut } from '@/hooks/use-keyboard-shortcut'
+import { useUrlValidation } from '@/hooks/use-url-validation'
 import { minInterval } from './home.schema'
 import { useHome } from './useHome'
 
@@ -68,6 +72,10 @@ function HomeComponent() {
   } = useHome()
 
   const { t } = useTranslation()
+
+  // Get current URL value from form
+  const urlValue = methods.watch('url')
+  const urlValidation = useUrlValidation(urlValue || '', !!urlValue && urlValue.length > 0)
 
   // Keyboard shortcut: Ctrl+Space to toggle rotation
   const handleShortcut = useCallback(() => {
@@ -219,12 +227,47 @@ function HomeComponent() {
                     />
                   </TableCell>
                   <TableCell className="align-top">
-                    <CustomInput
-                      control={methods.control}
-                      name="url"
-                      placeholder={t('table.urlPlaceholder')}
-                      required
-                    />
+                    <div className="space-y-1">
+                      <div className="relative">
+                        <CustomInput
+                          control={methods.control}
+                          name="url"
+                          placeholder={t('table.urlPlaceholder')}
+                          required
+                          endAdornment={
+                            urlValue && urlValue.length > 0 ? (
+                              <>
+                                {urlValidation.status === 'validating' && (
+                                  <Loader2
+                                    size={16}
+                                    className="animate-spin text-muted-foreground"
+                                  />
+                                )}
+                                {urlValidation.status === 'valid' && (
+                                  <CheckCircle2 size={16} className="text-green-500" />
+                                )}
+                                {urlValidation.status === 'invalid' && (
+                                  <XCircle size={16} className="text-red-500" />
+                                )}
+                                {urlValidation.status === 'error' && (
+                                  <XCircle size={16} className="text-yellow-500" />
+                                )}
+                              </>
+                            ) : undefined
+                          }
+                        />
+                      </div>
+                      {urlValidation.normalizedUrl &&
+                        urlValidation.normalizedUrl !== urlValue &&
+                        urlValidation.status === 'valid' && (
+                          <p
+                            className="text-xs text-muted-foreground truncate max-w-xs"
+                            title={urlValidation.normalizedUrl}
+                          >
+                            {t('urlPreview.preview')}: {urlValidation.normalizedUrl}
+                          </p>
+                        )}
+                    </div>
                   </TableCell>
                   <TableCell className="align-top">
                     <CustomInput

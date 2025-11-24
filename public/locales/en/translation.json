@@ -19,6 +19,9 @@
   "keyboard": {
     "shortcut": "Shortcut"
   },
+  "urlPreview": {
+    "preview": "Preview"
+  },
   "infoOpen": "When activated, other open tabs will be closed automatically.",
   "import": "Import",
   "export": "Export",
