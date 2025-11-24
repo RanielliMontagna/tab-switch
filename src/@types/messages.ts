@@ -39,9 +39,6 @@ export function isStartRotationMessage(
 /**
  * Type guard to check if message is StopRotationMessage
  */
-export function isStopRotationMessage(
-  message: BackgroundMessage
-): message is StopRotationMessage {
+export function isStopRotationMessage(message: BackgroundMessage): message is StopRotationMessage {
   return message.status === false
 }
-

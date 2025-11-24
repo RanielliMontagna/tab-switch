@@ -1,7 +1,7 @@
 import i18next from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
-import { initReactI18next } from 'react-i18next'
 import Backend, { type HttpBackendOptions } from 'i18next-http-backend'
+import { initReactI18next } from 'react-i18next'
 
 const isChromeExtension = typeof chrome !== 'undefined' && !!chrome.runtime?.id
 
@@ -17,11 +17,15 @@ const backendConfig: HttpBackendOptions = {
   },
 }
 
-i18next.use(LanguageDetector).use(initReactI18next).use(Backend).init({
-  backend: backendConfig,
-  returnObjects: true,
-  fallbackLng: ['pt', 'en'],
-  supportedLngs: ['pt', 'en'],
-  load: 'languageOnly',
-  debug: true,
-})
+i18next
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .use(Backend)
+  .init({
+    backend: backendConfig,
+    returnObjects: true,
+    fallbackLng: ['pt', 'en'],
+    supportedLngs: ['pt', 'en'],
+    load: 'languageOnly',
+    debug: true,
+  })

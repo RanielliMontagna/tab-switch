@@ -1,8 +1,8 @@
 import './styles/globals.css'
 
-import { Home } from '@/containers'
-import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { Toaster } from '@/components'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { Home } from '@/containers'
 
 function App() {
   return (

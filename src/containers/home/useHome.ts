@@ -1,12 +1,11 @@
+import { DragEndEvent } from '@dnd-kit/core'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { zodResolver } from '@hookform/resolvers/zod'
-
-import { DragEndEvent } from '@dnd-kit/core'
-import { useToast } from '@/hooks/use-toast'
-import { getStorageItem, setStorageItem, STORAGE_KEYS } from '@/libs/storage'
 import type { BackgroundMessage } from '@/@types/messages'
+import { useToast } from '@/hooks/use-toast'
+import { getStorageItem, STORAGE_KEYS, setStorageItem } from '@/libs/storage'
 
 import { newTabSchema, TabSchema, tabsFileSchema } from './home.schema'
 
@@ -141,9 +140,7 @@ export function useHome() {
       }
 
       // Send message to background script
-      const message: BackgroundMessage = checked
-        ? { status: true, tabs }
-        : { status: false }
+      const message: BackgroundMessage = checked ? { status: true, tabs } : { status: false }
       chrome.runtime.sendMessage(message)
 
       // Save the switch state to storage

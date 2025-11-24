@@ -1,17 +1,19 @@
-import { memo } from 'react'
+import { closestCenter, DndContext } from '@dnd-kit/core'
+import { SortableContext, useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import {
-  GripVertical,
-  RotateCwSquare,
-  Trash2,
-  Save,
   FolderDown,
   FolderUp,
+  GripVertical,
   Info,
+  RotateCwSquare,
+  Save,
+  Trash2,
 } from 'lucide-react'
-
+import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import Logo from '@/assets/logo.svg'
-import { useHome } from './useHome'
-
+import { Button, CustomInput, Form, Label, Switch } from '@/components'
 import {
   Table,
   TableBody,
@@ -20,14 +22,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-
-import { CSS } from '@dnd-kit/utilities'
-import { SortableContext, useSortable } from '@dnd-kit/sortable'
-import { closestCenter, DndContext } from '@dnd-kit/core'
-
-import { Button, CustomInput, Form, Label, Switch } from '@/components'
 import { minInterval } from './home.schema'
-import { useTranslation } from 'react-i18next'
+import { useHome } from './useHome'
 
 const SortableItem = memo(function SortableItem(props: { id: string; children: React.ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.id })
@@ -161,13 +157,13 @@ function HomeComponent() {
                           return
                         }
 
-                        if (!isNaN(numValue) && numValue < minInterval) {
+                        if (!Number.isNaN(numValue) && numValue < minInterval) {
                           e.target.value = minInterval.toString()
                           methods.setValue('interval', minInterval, { shouldValidate: true })
                           return
                         }
 
-                        if (!isNaN(numValue)) {
+                        if (!Number.isNaN(numValue)) {
                           methods.setValue('interval', numValue, { shouldValidate: true })
                         }
                       }}

@@ -1,11 +1,9 @@
 import React from 'react'
 
 import { Control, FieldValues, Path } from 'react-hook-form'
-
+import { masks } from '@/utils'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 import { Input } from '../ui/input'
-
-import { masks } from '@/utils'
 
 type MaskType = 'number' | 'cpf'
 
