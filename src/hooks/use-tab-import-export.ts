@@ -66,10 +66,17 @@ export function useTabImportExport(
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = FILE.ACCEPT_TYPE
+    input.style.display = 'none' // Hide the input element
 
     input.onchange = async (event) => {
       const inputElement = event.target
       const file = inputElement instanceof HTMLInputElement ? inputElement.files?.[0] : undefined
+
+      // Clean up: remove input from DOM
+      if (input.parentNode) {
+        input.parentNode.removeChild(input)
+      }
+
       if (!file) return
 
       const reader = new FileReader()
@@ -170,7 +177,13 @@ export function useTabImportExport(
       reader.readAsText(file)
     }
 
-    input.click()
+    // Add input to DOM before clicking (required for some browsers/extensions)
+    document.body.appendChild(input)
+
+    // Use setTimeout to ensure the input is properly attached before clicking
+    setTimeout(() => {
+      input.click()
+    }, 0)
   }, [setTabs, t, toast])
 
   return {
