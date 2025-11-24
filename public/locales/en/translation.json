@@ -43,5 +43,29 @@
     "details": "Error details",
     "retry": "Try again",
     "reload": "Reload page"
+  },
+  "toastSaveSuccess": {
+    "title": "Tab saved",
+    "description": "The tab has been saved successfully."
+  },
+  "toastSaveError": {
+    "title": "Save failed",
+    "description": "An error occurred while saving the tab. Please try again."
+  },
+  "toastLoadError": {
+    "title": "Load failed",
+    "description": "An error occurred while loading tabs. Please try again."
+  },
+  "toastDeleteError": {
+    "title": "Delete failed",
+    "description": "An error occurred while deleting the tab. Please try again."
+  },
+  "toastReorderError": {
+    "title": "Reorder failed",
+    "description": "An error occurred while reordering tabs. Please try again."
+  },
+  "toastSwitchError": {
+    "title": "Switch failed",
+    "description": "An error occurred while changing the switch state. Please try again."
   }
 }

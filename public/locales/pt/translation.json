@@ -43,5 +43,29 @@
     "details": "Detalhes do erro",
     "retry": "Tentar novamente",
     "reload": "Recarregar página"
+  },
+  "toastSaveSuccess": {
+    "title": "Aba salva",
+    "description": "A aba foi salva com sucesso."
+  },
+  "toastSaveError": {
+    "title": "Falha ao salvar",
+    "description": "Ocorreu um erro ao salvar a aba. Por favor, tente novamente."
+  },
+  "toastLoadError": {
+    "title": "Falha ao carregar",
+    "description": "Ocorreu um erro ao carregar as abas. Por favor, tente novamente."
+  },
+  "toastDeleteError": {
+    "title": "Falha ao deletar",
+    "description": "Ocorreu um erro ao deletar a aba. Por favor, tente novamente."
+  },
+  "toastReorderError": {
+    "title": "Falha ao reordenar",
+    "description": "Ocorreu um erro ao reordenar as abas. Por favor, tente novamente."
+  },
+  "toastSwitchError": {
+    "title": "Falha ao alterar",
+    "description": "Ocorreu um erro ao alterar o estado da chave. Por favor, tente novamente."
   }
 }

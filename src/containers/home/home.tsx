@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import {
   GripVertical,
   RotateCwSquare,
@@ -28,7 +29,7 @@ import { Button, CustomInput, Form, Label, Switch } from '@/components'
 import { minInterval } from './home.schema'
 import { useTranslation } from 'react-i18next'
 
-function SortableItem(props: { id: string; children: React.ReactNode }) {
+const SortableItem = memo(function SortableItem(props: { id: string; children: React.ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: props.id })
 
   const style = {
@@ -42,9 +43,9 @@ function SortableItem(props: { id: string; children: React.ReactNode }) {
       {props.children}
     </TableRow>
   )
-}
+})
 
-export function Home() {
+function HomeComponent() {
   const {
     tabs,
     methods,
@@ -152,18 +153,23 @@ export function Home() {
                       placeholder="1000"
                       step="1000"
                       onChange={(e) => {
-                        if (parseInt(e.target.value) < minInterval) {
-                          e.target.value = Math.max(
-                            minInterval,
-                            parseInt(e.target.value)
-                          ).toString()
+                        const value = e.target.value
+                        const numValue = parseInt(value, 10)
+
+                        if (value === '') {
+                          methods.setValue('interval', minInterval, { shouldValidate: false })
+                          return
                         }
 
-                        if (e.target.value === '') {
+                        if (!isNaN(numValue) && numValue < minInterval) {
                           e.target.value = minInterval.toString()
+                          methods.setValue('interval', minInterval, { shouldValidate: true })
+                          return
                         }
 
-                        methods.setValue('interval', Number(e.target.value))
+                        if (!isNaN(numValue)) {
+                          methods.setValue('interval', numValue, { shouldValidate: true })
+                        }
                       }}
                       required
                     />
@@ -199,3 +205,5 @@ export function Home() {
     </Form>
   )
 }
+
+export const Home = memo(HomeComponent)

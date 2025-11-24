@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -20,38 +20,72 @@ export function useHome() {
   const methods = useForm<TabSchema>({
     resolver: zodResolver(newTabSchema),
     defaultValues: { name: '', url: '', interval: 5000, saved: false },
+    mode: 'onChange',
   })
 
   async function handleSubmit(data: TabSchema) {
-    const newTabs = [...tabs, data]
-    setTabs(newTabs)
+    try {
+      const newTabs = [...tabs, data]
+      setTabs(newTabs)
 
-    // Save the form data to storage
-    await setStorageItem(STORAGE_KEYS.TABS, newTabs)
+      // Save the form data to storage
+      await setStorageItem(STORAGE_KEYS.TABS, newTabs)
 
-    // Clear the form
-    methods.reset()
+      // Clear the form
+      methods.reset()
+
+      toast({
+        title: t('toastSaveSuccess.title'),
+        description: t('toastSaveSuccess.description'),
+        variant: 'success',
+      })
+    } catch (error) {
+      console.error('Error saving tab:', error)
+      toast({
+        title: t('toastSaveError.title'),
+        description: t('toastSaveError.description'),
+        variant: 'destructive',
+      })
+    }
   }
 
-  async function loadTabs() {
-    const loadedTabs = await getStorageItem<TabSchema[]>(STORAGE_KEYS.TABS)
-    if (loadedTabs) {
-      setTabs(loadedTabs)
-    }
+  const loadTabs = useCallback(async () => {
+    try {
+      const loadedTabs = await getStorageItem<TabSchema[]>(STORAGE_KEYS.TABS)
+      if (loadedTabs) {
+        setTabs(loadedTabs)
+      }
 
-    const loadedSwitch = await getStorageItem<boolean>(STORAGE_KEYS.SWITCH)
-    if (loadedSwitch !== null) {
-      setActiveSwitch(loadedSwitch)
+      const loadedSwitch = await getStorageItem<boolean>(STORAGE_KEYS.SWITCH)
+      if (loadedSwitch !== null) {
+        setActiveSwitch(loadedSwitch)
+      }
+    } catch (error) {
+      console.error('Error loading tabs from storage:', error)
+      toast({
+        title: t('toastLoadError.title'),
+        description: t('toastLoadError.description'),
+        variant: 'destructive',
+      })
     }
-  }
+  }, [t, toast])
 
   async function handleRemoveTab(index: number) {
-    const newTabs = tabs.filter((_, i) => i !== index)
+    try {
+      const newTabs = tabs.filter((_, i) => i !== index)
 
-    setTabs(newTabs)
+      setTabs(newTabs)
 
-    // Save the form data to storage
-    await setStorageItem(STORAGE_KEYS.TABS, newTabs)
+      // Save the form data to storage
+      await setStorageItem(STORAGE_KEYS.TABS, newTabs)
+    } catch (error) {
+      console.error('Error removing tab:', error)
+      toast({
+        title: t('toastDeleteError.title'),
+        description: t('toastDeleteError.description'),
+        variant: 'destructive',
+      })
+    }
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -70,17 +104,26 @@ export function useHome() {
     }
 
     if (active.id !== over?.id) {
-      const oldIndex = tabs.findIndex((tab) => tab.name === active.id)
-      const newIndex = tabs.findIndex((tab) => tab.name === over?.id)
+      try {
+        const oldIndex = tabs.findIndex((tab) => tab.name === active.id)
+        const newIndex = tabs.findIndex((tab) => tab.name === over?.id)
 
-      const reorderedTabs = Array.from(tabs)
-      const [removed] = reorderedTabs.splice(oldIndex, 1)
-      reorderedTabs.splice(newIndex, 0, removed)
+        const reorderedTabs = Array.from(tabs)
+        const [removed] = reorderedTabs.splice(oldIndex, 1)
+        reorderedTabs.splice(newIndex, 0, removed)
 
-      setTabs(reorderedTabs)
+        setTabs(reorderedTabs)
 
-      // Save the reordered tabs to storage
-      await setStorageItem(STORAGE_KEYS.TABS, reorderedTabs)
+        // Save the reordered tabs to storage
+        await setStorageItem(STORAGE_KEYS.TABS, reorderedTabs)
+      } catch (error) {
+        console.error('Error reordering tabs:', error)
+        toast({
+          title: t('toastReorderError.title'),
+          description: t('toastReorderError.description'),
+          variant: 'destructive',
+        })
+      }
     }
   }
 
@@ -108,12 +151,22 @@ export function useHome() {
 
       // Update the switch state
       setActiveSwitch(checked)
-    } catch {
-      toast({
-        title: t('toastNotInstalled.title'),
-        description: t('toastNotInstalled.description'),
-        variant: 'destructive',
-      })
+    } catch (error) {
+      console.error('Error changing switch state:', error)
+      // Check if it's a Chrome extension error
+      if (error instanceof Error && error.message.includes('Extension context invalidated')) {
+        toast({
+          title: t('toastNotInstalled.title'),
+          description: t('toastNotInstalled.description'),
+          variant: 'destructive',
+        })
+      } else {
+        toast({
+          title: t('toastSwitchError.title'),
+          description: t('toastSwitchError.description'),
+          variant: 'destructive',
+        })
+      }
     }
   }
 
@@ -189,7 +242,7 @@ export function useHome() {
 
   useEffect(() => {
     loadTabs()
-  }, [])
+  }, [loadTabs])
 
   return {
     tabs,
