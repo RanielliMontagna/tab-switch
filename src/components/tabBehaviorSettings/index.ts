@@ -1,0 +1,1 @@
+export { TabBehaviorSettings } from './tabBehaviorSettings'

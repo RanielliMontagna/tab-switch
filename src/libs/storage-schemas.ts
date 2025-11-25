@@ -32,6 +32,13 @@ export const themeStorageSchema = z.enum(['light', 'dark', 'system'])
 export const languageStorageSchema = z.enum(['pt', 'en'])
 
 /**
+ * Schema for validating tab behavior preference from storage
+ * - 'keep-tabs': Keeps existing tabs and adds rotation tabs to current window
+ * - 'close-others': Closes tabs not in rotation (legacy behavior)
+ */
+export const tabBehaviorStorageSchema = z.enum(['keep-tabs', 'close-others'])
+
+/**
  * Schema for validating data version from storage
  */
 export const dataVersionStorageSchema = z.number().int().nonnegative()
@@ -98,6 +105,21 @@ export function validateLanguageStorage(data: unknown): z.infer<typeof languageS
     return languageStorageSchema.parse(data)
   } catch {
     return 'en'
+  }
+}
+
+/**
+ * Validates tab behavior preference from storage
+ * @param data - Data to validate
+ * @returns Validated tab behavior or 'keep-tabs' if validation fails
+ */
+export function validateTabBehaviorStorage(
+  data: unknown
+): z.infer<typeof tabBehaviorStorageSchema> {
+  try {
+    return tabBehaviorStorageSchema.parse(data)
+  } catch {
+    return 'keep-tabs'
   }
 }
 
