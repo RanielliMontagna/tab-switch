@@ -15,7 +15,7 @@ const urlSchema = z
   .transform((url) => normalizeUrl(url))
 
 export const newTabSchema = z.object({
-  name: z.string().min(1), // Message will be translated via error map
+  name: z.string().optional(), // Optional - will be generated from URL if not provided
   url: urlSchema,
   interval: z.number().int().positive().min(minInterval), // Message will be translated via error map with minInterval as param
   saved: z.boolean().optional(),
@@ -23,6 +23,7 @@ export const newTabSchema = z.object({
 
 export const tabSchema = newTabSchema.extend({
   id: z.number().int().positive(),
+  name: z.string().min(1), // Required in saved tabs (always generated if not provided)
 })
 
 export const tabsFileSchema = z.array(newTabSchema)

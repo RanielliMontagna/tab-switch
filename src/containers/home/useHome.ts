@@ -7,6 +7,7 @@ import { useRotationControl, useTabImportExport, useTabOperations } from '@/hook
 import { useSessions } from '@/hooks/use-sessions'
 import { useToast } from '@/hooks/use-toast'
 import { logger } from '@/libs/logger'
+import { generateNameFromUrl } from '@/utils/url'
 import { minInterval, NewTabSchema, newTabSchema, TabSchema } from './home.schema'
 
 /**
@@ -103,9 +104,13 @@ export function useHome() {
       const validatedInterval =
         Number.isNaN(interval) || interval < minInterval ? minInterval : Math.round(interval)
 
+      // Generate name from URL if name is not provided or is empty
+      const name =
+        data.name?.trim() || generateNameFromUrl(data.url) || `Tab ${localTabs.length + 1}`
+
       // Generate ID for the new tab
       const newId = localTabs.length > 0 ? Math.max(...localTabs.map((t) => t.id)) + 1 : 1
-      const tabWithId: TabSchema = { ...data, id: newId, interval: validatedInterval }
+      const tabWithId: TabSchema = { ...data, name, id: newId, interval: validatedInterval }
       const newTabs = [...localTabs, tabWithId]
       setLocalTabs(newTabs)
 

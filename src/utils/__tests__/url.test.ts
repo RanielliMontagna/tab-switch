@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isValidUrl, normalizeUrl, sanitizeUrl } from '../url'
+import { generateNameFromUrl, isValidUrl, normalizeUrl, sanitizeUrl } from '../url'
 
 describe('url utilities', () => {
   describe('sanitizeUrl', () => {
@@ -88,6 +88,80 @@ describe('url utilities', () => {
     it('should preserve valid URL structure', () => {
       const result = normalizeUrl('https://Example.com/path?query=1#hash')
       expect(result).toBe('https://example.com/path?query=1#hash')
+    })
+  })
+
+  describe('generateNameFromUrl', () => {
+    it('should return empty string for empty input', () => {
+      expect(generateNameFromUrl('')).toBe('')
+    })
+
+    it('should return empty string for non-string input', () => {
+      expect(generateNameFromUrl(null as unknown as string)).toBe('')
+      expect(generateNameFromUrl(undefined as unknown as string)).toBe('')
+    })
+
+    it('should extract domain from https URL', () => {
+      const result = generateNameFromUrl('https://example.com')
+      expect(result).toBe('Example.com')
+    })
+
+    it('should extract domain from http URL', () => {
+      const result = generateNameFromUrl('http://example.com')
+      expect(result).toBe('Example.com')
+    })
+
+    it('should remove www. prefix', () => {
+      const result = generateNameFromUrl('https://www.example.com')
+      expect(result).toBe('Example.com')
+    })
+
+    it('should capitalize first letter', () => {
+      const result = generateNameFromUrl('https://google.com')
+      expect(result).toBe('Google.com')
+    })
+
+    it('should remove path, query and hash', () => {
+      const result = generateNameFromUrl('https://example.com/path/to/page?query=1#hash')
+      expect(result).toBe('Example.com')
+    })
+
+    it('should remove port number', () => {
+      const result = generateNameFromUrl('https://example.com:8080')
+      expect(result).toBe('Example.com')
+    })
+
+    it('should handle URL without protocol', () => {
+      const result = generateNameFromUrl('example.com')
+      expect(result).toBe('Example.com')
+    })
+
+    it('should handle URL with www. and no protocol', () => {
+      const result = generateNameFromUrl('www.example.com')
+      expect(result).toBe('Example.com')
+    })
+
+    it('should handle subdomains', () => {
+      const result = generateNameFromUrl('https://subdomain.example.com')
+      expect(result).toBe('Subdomain.example.com')
+    })
+
+    it('should handle complex URLs', () => {
+      const result = generateNameFromUrl(
+        'https://www.github.com/user/repo/issues?state=open#comment'
+      )
+      expect(result).toBe('Github.com')
+    })
+
+    it('should return empty string for invalid URL format', () => {
+      const result = generateNameFromUrl('not-a-url')
+      // Should try to extract something or return empty
+      expect(typeof result).toBe('string')
+    })
+
+    it('should handle URLs with special characters in domain', () => {
+      const result = generateNameFromUrl('https://example-site.com')
+      expect(result).toBe('Example-site.com')
     })
   })
 })

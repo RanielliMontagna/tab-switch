@@ -6,6 +6,7 @@ import type {
   StartRotationMessage,
 } from '@/@types/messages'
 import { logger } from '@/libs/logger'
+import { getStorageItem, STORAGE_KEYS } from '@/libs/storage'
 import { createTabs, removeOtherTabs } from '@/libs/tab-management'
 import {
   getRotationState,
@@ -96,7 +97,16 @@ chrome.runtime.onMessage.addListener(
       }
 
       // Handle start action
+      // Get tab behavior preference
+      const tabBehavior =
+        (await getStorageItem<'keep-tabs' | 'close-others'>(STORAGE_KEYS.TAB_BEHAVIOR)) ||
+        'keep-tabs'
+
+      logger.info(`Tab behavior preference: ${tabBehavior}`)
+
+      // Create tabs in current window
       const creationResult = await createTabs(message.tabs)
+
       if (creationResult.tabs.length === 0) {
         const errorMessages = creationResult.errors.map((e) => `${e.tab}: ${e.error}`).join(', ')
         sendResponse({
@@ -107,8 +117,13 @@ chrome.runtime.onMessage.addListener(
         return true
       }
 
-      // Remove tabs that are not in the rotation
-      await removeOtherTabs(creationResult.tabs.map((tab) => tab.id))
+      // Only remove other tabs if behavior is 'close-others'
+      if (tabBehavior === 'close-others') {
+        logger.info('Removing other tabs (close-others mode)')
+        await removeOtherTabs(creationResult.tabs.map((tab) => tab.id))
+      } else {
+        logger.info(`Keeping existing tabs (${tabBehavior} mode)`)
+      }
 
       // Start rotation with created tabs
       startRotation(creationResult.tabs)

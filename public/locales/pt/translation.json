@@ -37,7 +37,15 @@
     "title": "Erro",
     "description": "Falha ao pausar/retomar rotação. Tente novamente."
   },
-  "infoOpen": "Quando ativado, outras abas abertas serão fechadas automaticamente.",
+  "infoOpen": "Clique no ícone de configurações para definir o comportamento das abas.",
+  "tabBehavior": {
+    "title": "Comportamento das Abas",
+    "description": "Escolha como lidar com as abas existentes ao iniciar a rotação",
+    "keep-tabs": "Manter abas existentes",
+    "keep-tabs-description": "Adiciona as abas de rotação à janela atual sem fechar nada",
+    "close-others": "Fechar outras abas",
+    "close-others-description": "Fecha todas as abas que não fazem parte da rotação"
+  },
   "import": "Importar",
   "export": "Exportar",
   "dropFileHere": "Arraste o arquivo JSON aqui para importar",

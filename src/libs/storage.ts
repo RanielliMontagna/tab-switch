@@ -12,6 +12,7 @@ import {
   validatePauseStateStorage,
   validateSessionsStorage,
   validateSwitchStorage,
+  validateTabBehaviorStorage,
   validateTabsStorage,
   validateThemeStorage,
 } from './storage-schemas'
@@ -23,6 +24,7 @@ const STORAGE_KEYS = {
   THEME: 'theme',
   LANGUAGE: 'language',
   SESSIONS: 'sessions',
+  TAB_BEHAVIOR: 'tabBehavior',
 } as const
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS] | typeof STORAGE_VERSION_KEY
@@ -98,6 +100,9 @@ function validateStorageValue(key: StorageKey | string, value: unknown): unknown
   }
   if (key === STORAGE_KEYS.SESSIONS) {
     return validateSessionsStorage(value)
+  }
+  if (key === STORAGE_KEYS.TAB_BEHAVIOR) {
+    return validateTabBehaviorStorage(value)
   }
   if (key === STORAGE_VERSION_KEY) {
     return validateDataVersionStorage(value)

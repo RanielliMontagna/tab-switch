@@ -12,7 +12,7 @@ import { logger } from '@/libs/logger'
 import { STORAGE_KEYS, setStorageItem } from '@/libs/storage'
 import { validateImportedData } from '@/utils/integrity'
 import { rateLimiters } from '@/utils/rate-limiter'
-import { sanitizeUrl } from '@/utils/url'
+import { generateNameFromUrl, sanitizeUrl } from '@/utils/url'
 import { tabRotateFileSchema, tabsFileSchema } from '../containers/home/home.schema'
 
 /**
@@ -61,20 +61,28 @@ async function processImportedContent(
       // Try standard format first
       const tabsResult = tabsFileSchema.safeParse(parsed)
       if (tabsResult.success) {
-        convertedTabs = tabsResult.data.map((tab) => ({
-          name: tab.name,
-          url: tab.url,
-          interval: Number(tab.interval),
-        }))
+        convertedTabs = tabsResult.data.map((tab, index) => {
+          // Generate name from URL if name is not provided
+          const name = tab.name?.trim() || generateNameFromUrl(tab.url) || `Tab ${index + 1}`
+          return {
+            name,
+            url: tab.url,
+            interval: Number(tab.interval),
+          }
+        })
       } else {
         // Try tab-rotate format (legacy)
         const rotateResult = tabRotateFileSchema.safeParse(parsed)
         if (rotateResult.success) {
-          convertedTabs = rotateResult.data.map((tab) => ({
-            name: tab.nome,
-            url: tab.url,
-            interval: tab.duracao, // Already converted to milliseconds in schema
-          }))
+          convertedTabs = rotateResult.data.map((tab, index) => {
+            // Generate name from URL if name is not provided
+            const name = tab.nome?.trim() || generateNameFromUrl(tab.url) || `Tab ${index + 1}`
+            return {
+              name,
+              url: tab.url,
+              interval: tab.duracao, // Already converted to milliseconds in schema
+            }
+          })
         } else {
           throw new Error('Invalid file format')
         }

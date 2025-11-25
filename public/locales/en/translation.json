@@ -37,7 +37,15 @@
     "title": "Error",
     "description": "Failed to pause/resume rotation. Please try again."
   },
-  "infoOpen": "When activated, other open tabs will be closed automatically.",
+  "infoOpen": "Click the settings icon to configure tab behavior.",
+  "tabBehavior": {
+    "title": "Tab Behavior",
+    "description": "Choose how to handle existing tabs when starting rotation",
+    "keep-tabs": "Keep existing tabs",
+    "keep-tabs-description": "Adds rotation tabs to the current window without closing anything",
+    "close-others": "Close other tabs",
+    "close-others-description": "Closes all tabs that are not part of the rotation"
+  },
   "import": "Import",
   "export": "Export",
   "dropFileHere": "Drop JSON file here to import",
