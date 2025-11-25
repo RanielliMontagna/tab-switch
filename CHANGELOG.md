@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0](https://github.com/RanielliMontagna/tab-switch/compare/tab-switch-v1.2.0...tab-switch-v1.3.0) (2025-11-25)
+
+
+### Features
+
+* add tab behavior settings and storage management for tab handling preferences ([e77901a](https://github.com/RanielliMontagna/tab-switch/commit/e77901a3fb9f0105f45bdc19d1872c12bf4a9734))
+* implement URL-based tab naming and schema updates ([982f67e](https://github.com/RanielliMontagna/tab-switch/commit/982f67e5a478efc8a3cdf67fda2d7e10817ed451))
+
 ## [1.2.0](https://github.com/RanielliMontagna/tab-switch/compare/tab-switch-v1.1.0...tab-switch-v1.2.0) (2025-11-24)
 
 
